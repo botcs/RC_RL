@@ -190,6 +190,7 @@ class VGDLEnvAndres(object):
 
 	###Auxiliary functions from player.py
     def level_step(self):
+        print('on dress little step')
         if self.level_switch == 'sequential':
             if sum(self.recent_history) == int(self.criteria.split('/')[0]):  # if level is 'won'
                 if self.Env.lvl == len(self.Env.env_list) - 1:  # if this is the last training level

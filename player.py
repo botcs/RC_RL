@@ -17,6 +17,7 @@ import sys
 from VGDLEnv import VGDLEnv
 import csv
 import cloudpickle
+import time
 
 import os
 from pygame.locals import K_RIGHT, K_LEFT, K_UP, K_DOWN, K_SPACE
@@ -28,9 +29,12 @@ from pygame.locals import K_RIGHT, K_LEFT, K_UP, K_DOWN, K_SPACE
 class Player(object):
     def __init__(self, config):
         self.config = config
-        self.Env = VGDLEnv(self.config.game_name, 'all_games')
+        #self.Env = VGDLEnv(self.config.game_name, 'all_games')
+        self.Env = VGDLEnv(self.config.game_name, 'fmri_all_games')
         self.Env.set_level(0)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print('device', self.device)
+        self.time_start = time.perf_counter()
 
         print('Training at seed = {}'.format(self.config.random_seed))
 
@@ -99,10 +103,30 @@ class Player(object):
         self.target_net.load_state_dict(torch.load('model_weights/{}'.format(self.config.model_weight_path)))
 
     def level_step(self):
+        print(' level_step player ', self.level_steps, self.config.max_level_steps, self.Env.lvl)
 
-        if self.config.level_switch == 'sequential':
+        won = sum(self.recent_history) == int(self.config.criteria.split('/')[0])
 
-            if sum(self.recent_history) == int(self.config.criteria.split('/')[0]):  # if level is 'won'
+        if self.config.level_switch == 'repeated':
+
+            if won or self.level_steps == self.config.max_level_steps:
+
+                self.Env.lvl += 1
+                if self.Env.lvl == len(self.Env.env_list):
+                    print('   starting over')
+                    self.Env.lvl = 0
+                self.Env.set_level(self.Env.lvl)
+                print('repeated next level', self.level_steps, self.config.max_level_steps, self.Env.lvl)
+                print('   time ', time.perf_counter() - self.time_start)
+
+                self.recent_history = [0] * int(self.config.criteria.split('/')[1])
+                self.level_steps = 0
+                
+            return 0 # learning is never finished in repeated mode
+
+        elif self.config.level_switch == 'sequential':
+
+            if won: # if level is 'won'
 
                 if self.Env.lvl == len(self.Env.env_list) - 1:  # if this is the last training level
                     print("Learning Finished")
@@ -133,11 +157,13 @@ class Player(object):
 
     def model_update(self):
 
+        #print('model_update', self.steps, self.config.target_update, self.steps % self.config.target_update)
         if self.steps > 1000 and not self.steps % self.config.target_update:
 
             self.target_net.load_state_dict(self.policy_net.state_dict())
 
-            if self.episode_reward > self.best_reward or self.steps % 50000:
+            print('episode_reward ', self.episode_reward, self.best_reward)
+            if self.episode_reward > self.best_reward or self.steps % 50000 == 0:
                 self.best_reward = self.episode_reward
                 print("New Best Reward: {}".format(self.best_reward))
                 self.save_model()
@@ -223,6 +249,7 @@ class Player(object):
             self.load_model()
 
         self.steps = 0
+        self.level_steps = 0
         self.episode_steps = 0
         self.episode = 0
         self.best_reward = 0
@@ -269,6 +296,7 @@ class Player(object):
 
             self.steps += 1
             self.episode_steps += 1
+            self.level_steps += 1
 
             # if not self.steps%100:
             # print(self.steps)
@@ -326,7 +354,10 @@ class Player(object):
             # Perform one step of the optimization (on the target network)
             self.optimize_model()
 
-            if self.ended or self.episode_steps > self.config.timeout:
+            # Update the target network
+            self.model_update()
+
+            if self.ended or self.episode_steps > self.config.timeout or (self.level_steps >= self.config.max_level_steps and self.config.level_switch == 'repeated'):
 
                 if self.episode_steps > self.config.timeout: print("Game Timed Out")
 
@@ -343,9 +374,6 @@ class Player(object):
                 # pdb.set_trace()
                 print("Level {}, episode reward at step {}: {}".format(self.Env.lvl, self.steps, self.episode_reward))
                 sys.stdout.flush()
-
-                # Update the target network
-                self.model_update()
 
                 # self.reward_history.append([self.Env.lvl, self.steps, self.episode_reward, self.win])
                 episde_results = [self.Env.lvl, self.steps, self.episode_reward, self.win, self.config.game_name,
