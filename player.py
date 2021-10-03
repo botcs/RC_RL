@@ -34,7 +34,7 @@ class Player(object):
         self.Env.set_level(0)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print('device', self.device)
-        self.time_start = time.perf_counter()
+        self.time_start = time.time()
 
         print('Training at seed = {}'.format(self.config.random_seed))
 
@@ -74,7 +74,7 @@ class Player(object):
         misc.imsave('altered.png', np.rollaxis(self.get_screen().cpu().numpy()[0], 0, 3))
 
     def get_screen(self):
-        # imageio.imsave('sample.png', self.Env.render())
+        #imageio.imsave('sample.png', self.Env.render())
         #pdb.set_trace()
         screen = self.Env.render().transpose((2, 0, 1))
         screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
@@ -93,14 +93,18 @@ class Player(object):
 
     def save_model(self):
 
+        filepath = 'model_weights/{}_trial{}_{}.pt'.format(self.config.game_name, self.config.trial_num,
+                                                           self.config.level_switch)
+        print('saving to ', filepath)
         torch.save(self.target_net.state_dict(),
-                   'model_weights/{}_trial{}_{}.pt'.format(self.config.game_name, self.config.trial_num,
-                                                           self.config.level_switch))
+                   filepath)
 
     def load_model(self):
 
-        self.target_net.load_state_dict(torch.load('model_weights/{}'.format(self.config.model_weight_path)))
-        self.target_net.load_state_dict(torch.load('model_weights/{}'.format(self.config.model_weight_path)))
+        filepath = 'model_weights/{}'.format(self.config.model_weight_path)
+
+        self.policy_net.load_state_dict(torch.load(filepath))
+        self.target_net.load_state_dict(torch.load(filepath))
 
     def level_step(self):
         print(' level_step player ', self.level_steps, self.config.max_level_steps, self.Env.lvl)
@@ -117,7 +121,7 @@ class Player(object):
                     self.Env.lvl = 0
                 self.Env.set_level(self.Env.lvl)
                 print('repeated next level', self.level_steps, self.config.max_level_steps, self.Env.lvl)
-                print('   time ', time.perf_counter() - self.time_start)
+                print('   time ', time.time() - self.time_start)
 
                 self.recent_history = [0] * int(self.config.criteria.split('/')[1])
                 self.level_steps = 0
