@@ -111,7 +111,25 @@ class Player(object):
 
         won = sum(self.recent_history) == int(self.config.criteria.split('/')[0])
 
-        if self.config.level_switch == 'repeated':
+        if self.config.level_switch == 'fmri':
+
+            if self.level_steps == self.config.max_level_steps:
+
+                self.Env.lvl += 1
+                if self.Env.lvl == len(self.Env.env_list):
+                    print('   subject finished')
+                    return 1
+
+                self.Env.set_level(self.Env.lvl)
+                print('fmri next level', self.level_steps, self.config.max_level_steps, self.Env.lvl)
+                print('   time ', time.time() - self.time_start)
+
+                self.recent_history = [0] * int(self.config.criteria.split('/')[1])
+                self.level_steps = 0
+                
+            return 0 
+
+        elif self.config.level_switch == 'repeated':
 
             if won or self.level_steps == self.config.max_level_steps:
 
@@ -361,7 +379,7 @@ class Player(object):
             # Update the target network
             self.model_update()
 
-            if self.ended or self.episode_steps > self.config.timeout or (self.level_steps >= self.config.max_level_steps and self.config.level_switch == 'repeated'):
+            if self.ended or self.episode_steps > self.config.timeout or (self.level_steps >= self.config.max_level_steps and self.config.level_switch in ['repeated', 'fmri']):
 
                 if self.episode_steps > self.config.timeout: print("Game Timed Out")
 
