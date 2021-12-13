@@ -42,9 +42,10 @@ config.file_names = 'all_games/'
 
 print("Game: {}".format(config.game_name))
 
+original_trial_num = int(config.trial_num)
 for trial_num in range(config.num_trials):
 
-	config.trial_num =  trial_num + int(config.trial_num)
+	config.trial_num =  trial_num + original_trial_num
 
 	config.random_seed = config.trial_num
 

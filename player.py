@@ -254,11 +254,12 @@ class Player(object):
         # print(loss)
 
         # Optimize the model
-        self.optimizer.zero_grad()
-        loss.backward()
-        for param in self.policy_net.parameters():
-            param.grad.data.clamp_(-1, 1)
-        self.optimizer.step()
+        if False:
+            self.optimizer.zero_grad()
+            loss.backward()
+            for param in self.policy_net.parameters():
+                param.grad.data.clamp_(-1, 1)
+            self.optimizer.step()
 
     def train_model(self):
 
