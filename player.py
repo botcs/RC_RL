@@ -30,7 +30,8 @@ class Player(object):
     def __init__(self, config):
         self.config = config
         #self.Env = VGDLEnv(self.config.game_name, 'all_games')
-        self.Env = VGDLEnv(self.config.game_name, 'fmri_all_games')
+        #self.Env = VGDLEnv(self.config.game_name, 'fmri_all_games')  # TODO use!!!
+        self.Env = VGDLEnv(self.config.game_name, 'test_games')
         self.Env.set_level(0)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print('device', self.device)
@@ -138,7 +139,7 @@ class Player(object):
                     print('   starting over')
                     self.Env.lvl = 0
                 self.Env.set_level(self.Env.lvl)
-                print('repeated next level', self.level_steps, self.config.max_level_steps, self.Env.lvl)
+                print('repeated next level', won, self.level_steps, self.config.max_level_steps, self.Env.lvl)
                 print('   time ', time.time() - self.time_start)
 
                 self.recent_history = [0] * int(self.config.criteria.split('/')[1])
@@ -184,7 +185,7 @@ class Player(object):
 
             self.target_net.load_state_dict(self.policy_net.state_dict())
 
-            print('episode_reward ', self.episode_reward, self.best_reward)
+            print('model_update: episode_reward ', self.episode_reward, self.best_reward)
             if self.episode_reward > self.best_reward or self.steps % 50000 == 0:
                 self.best_reward = self.episode_reward
                 print("New Best Reward: {}".format(self.best_reward))
@@ -198,9 +199,13 @@ class Player(object):
         self.steps_done += 1.
         if sample > eps_threshold:
             with torch.no_grad():
-                return self.policy_net(self.state).max(1)[1].view(1, 1)
+                action = self.policy_net(self.state).max(1)[1].view(1, 1)
+                #print('select_action: exploit', action, ' (threshold = ', eps_threshold, ')')
+                return action
         else:
-            return torch.tensor([[np.random.choice([0, 1])]], device=self.device, dtype=torch.long)
+            action = torch.tensor([[np.random.choice([0, 1, 2, 3, 4, 5])]], device=self.device, dtype=torch.long)
+            #print('select_action: explore', action)
+            return action
 
     def optimize_model(self):
 
@@ -299,6 +304,8 @@ class Player(object):
 
         torch.backends.cudnn.deterministic = True
         torch.manual_seed = (self.config.random_seed)
+        random.seed(self.config.random_seed)
+        np.random.seed(self.config.random_seed)
 
         self.Env.reset()
         ## store game info once
@@ -321,6 +328,8 @@ class Player(object):
             self.episode_steps += 1
             self.level_steps += 1
 
+            #print('steps', self.steps)
+
             # if not self.steps%100:
             # print(self.steps)
             # print(self.episode_reward)
@@ -331,6 +340,9 @@ class Player(object):
             self.action = self.select_action()
 
             self.reward, self.ended, self.win = self.Env.step(self.action.item())
+
+            #print('reward, ended, win', self.reward, self.ended, self.win)
+            #misc.imsave('screens/step_%d_after.png' % self.steps, self.Env.render())
 
             avatar_position_data['episodes'][-1].append((self.Env.current_env._game.sprite_groups['avatar'][0].rect.left,
                                                          self.Env.current_env._game.sprite_groups['avatar'][0].rect.top,
@@ -381,6 +393,8 @@ class Player(object):
             self.model_update()
 
             if self.ended or self.episode_steps > self.config.timeout or (self.level_steps >= self.config.max_level_steps and self.config.level_switch in ['repeated', 'fmri']):
+
+                #import pdb; pdb.set_trace()
 
                 if self.episode_steps > self.config.timeout: print("Game Timed Out")
 
