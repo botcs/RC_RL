@@ -30,8 +30,8 @@ class Player(object):
     def __init__(self, config):
         self.config = config
         #self.Env = VGDLEnv(self.config.game_name, 'all_games')
-        #self.Env = VGDLEnv(self.config.game_name, 'fmri_all_games')  # TODO use!!!
-        self.Env = VGDLEnv(self.config.game_name, 'test_games')
+        self.Env = VGDLEnv(self.config.game_name, 'fmri_all_games')  # TODO use!!!
+        #self.Env = VGDLEnv(self.config.game_name, 'test_games')
         self.Env.set_level(0)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print('device', self.device)
@@ -214,7 +214,7 @@ class Player(object):
             if self.steps_done % 1000 == 0:
                 self.policy_net_action_value_history.append(self.policy_net(self.state).detach().cpu().numpy())
                 self.target_net_action_value_history.append(self.target_net(self.state).detach().cpu().numpy())
-                with open('bookkeeping.pkl', 'wb') as f:
+                with open(os.path.join('bookkeeping', self.config.game_name + '_bookkeeping.pkl'), 'wb') as f:
                     d = {'policy_net_action_value_history': self.policy_net_action_value_history,
                             'target_net_action_value_history': self.target_net_action_value_history}
                     cloudpickle.dump(d, f)

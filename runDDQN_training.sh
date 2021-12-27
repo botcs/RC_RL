@@ -23,7 +23,8 @@ for game in ${games[*]}; do
 
     # send the job to NCF
     #
-    sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 20001 -t 2-0:20 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=1200 -max_steps=1000000 -max_level_steps=100000 -level_switch=repeated -game_name=${game}"`
+    #sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 20001 -t 2-0:20 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=1200 -max_steps=1000000 -max_level_steps=100000 -level_switch=repeated -game_name=${game}"`
+    sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 20001 -t 6-0:20 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=25000000 -level_switch=repeated -game_name=${game} -target_update=1000"`
     # for local testing
     #sbatch_output=`echo Submitted batch job 88725418`
     echo $sbatch_output
