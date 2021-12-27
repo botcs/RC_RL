@@ -91,7 +91,7 @@ class Player(object):
         # Resize, and add a batch dimension (BCHW)
         screen = self.resize(screen).unsqueeze(0).to(self.device)
         #import pdb; pdb.set_trace()
-        screen[:] = 1 # TODO RM
+        #screen[:] = 1 # TODO RM
         return screen
 
     def save_gif(self):
@@ -210,10 +210,10 @@ class Player(object):
         self.steps_done += 1.
         # bookkeeping
         with torch.no_grad():
-            print('select_action', self.policy_net(self.state), self.target_net(self.state))
-            self.policy_net_action_value_history.append(self.policy_net(self.state).detach().cpu().numpy())
-            self.target_net_action_value_history.append(self.target_net(self.state).detach().cpu().numpy())
-            if self.steps_done % 100 == 0:
+            #print('select_action', self.policy_net(self.state), self.target_net(self.state), self.steps_done)
+            if self.steps_done % 1000 == 0:
+                self.policy_net_action_value_history.append(self.policy_net(self.state).detach().cpu().numpy())
+                self.target_net_action_value_history.append(self.target_net(self.state).detach().cpu().numpy())
                 with open('bookkeeping.pkl', 'wb') as f:
                     d = {'policy_net_action_value_history': self.policy_net_action_value_history,
                             'target_net_action_value_history': self.target_net_action_value_history}
@@ -361,7 +361,7 @@ class Player(object):
 
             self.reward, self.ended, self.win = self.Env.step(self.action.item())
 
-            print('reward, ended, win', self.reward, self.ended, self.win)
+            #print('reward, ended, win', self.reward, self.ended, self.win)
             #misc.imsave('screens/step_%d_after.png' % self.steps, self.Env.render())
 
             avatar_position_data['episodes'][-1].append((self.Env.current_env._game.sprite_groups['avatar'][0].rect.left,
@@ -396,7 +396,8 @@ class Player(object):
             last_screen = current_screen
             current_screen = self.get_screen()
             if not self.ended:
-                self.next_state = current_screen - last_screen
+                self.next_state = current_screen
+                #self.next_state = current_screen - last_screen
             else:
                 self.next_state = None
 
@@ -455,7 +456,7 @@ class Player(object):
                 self.Env.reset()
 
                 ## PEDRO: Write pickle to file every 100 episodes
-                if self.episode % 2 == 0:
+                if self.episode % 100 == 0:
                     with open(picklefilepath, 'wb') as f:
                         cloudpickle.dump(avatar_position_data, f)
 
