@@ -7,6 +7,11 @@ import torchvision.transforms as T
 import pdb
 from collections import namedtuple
 
+def init_weights_and_biases(m):
+    if (isinstance(m, nn.Conv2d) or isinstance(m, nn.BatchNorm2d) or 
+            isinstance(m, nn.Linear)):
+        nn.init.constant(m.weight, 0)
+        nn.init.constant(m.bias, 0)
 
 class DQN(nn.Module):
     def __init__(self, input_size, output_size):
@@ -27,6 +32,10 @@ class DQN(nn.Module):
             nn.Linear(64 * 4 * 4, 512),
             nn.ReLU(),
             nn.Linear(512, self.output_size))
+
+        # TODO RM?
+        self.cnn.apply(init_weights_and_biases)
+        self.classifier.apply(init_weights_and_biases)
 
     def forward(self, x):
         # assert(list(x.size()[-3]) == self.input_size)

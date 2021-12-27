@@ -9,13 +9,13 @@ import inspect
 
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 parser.add_argument('-trial_num', default = 1, required = False)
-parser.add_argument('-batch_size', default = 32, required = False)
+parser.add_argument('-batch_size', default = 32, type=int, required = False)
 parser.add_argument('-lr', default = .00025, type = float, required = False)
-parser.add_argument('-gamma', default = .999, required = False)
-parser.add_argument('-eps_start', default = 1, required = False)
-parser.add_argument('-eps_end', default = .1, required = False)
+parser.add_argument('-gamma', default = .999, type=float, required = False)
+parser.add_argument('-eps_start', default = 1, type=float, required = False)
+parser.add_argument('-eps_end', default = .1, type=float, required = False)
 parser.add_argument('-eps_decay', default = 200., required = False)
-parser.add_argument('-target_update', default = 100, required = False)
+parser.add_argument('-target_update', default = 100, type=int, required = False)
 parser.add_argument('-img_size', default = 64, required = False)
 parser.add_argument('-num_episodes', default = 20000, type = int, required = False)
 parser.add_argument('-max_steps', default = 1e6, type = int, required = False)
@@ -37,8 +37,6 @@ parser.add_argument('-random_seed', default = 7, type = int, required = False)
 config = parser.parse_args();
 
 print(config)
-
-config.file_names = 'all_games/'
 
 print("Game: {}".format(config.game_name))
 

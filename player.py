@@ -39,6 +39,10 @@ class Player(object):
 
         print('Training at seed = {}'.format(self.config.random_seed))
 
+        torch.manual_seed = (self.config.random_seed)
+        random.seed(self.config.random_seed)
+        np.random.seed(self.config.random_seed)
+
         self.game_size = np.shape(self.Env.render())
         self.input_channels = self.game_size[2]
         self.n_actions = len(self.Env.actions)
@@ -68,6 +72,10 @@ class Player(object):
 
         self.screen_history = []
 
+        # bookkeeping
+        self.policy_net_action_value_history = []
+        self.target_net_action_value_history = []
+
     def save_screen(self):
 
         misc.imsave('original.png', self.Env.render())
@@ -81,7 +89,10 @@ class Player(object):
         screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
         screen = torch.from_numpy(screen)
         # Resize, and add a batch dimension (BCHW)
-        return self.resize(screen).unsqueeze(0).to(self.device)
+        screen = self.resize(screen).unsqueeze(0).to(self.device)
+        #import pdb; pdb.set_trace()
+        screen[:] = 1 # TODO RM
+        return screen
 
     def save_gif(self):
 
@@ -181,14 +192,14 @@ class Player(object):
     def model_update(self):
 
         #print('model_update', self.steps, self.config.target_update, self.steps % self.config.target_update)
-        if self.steps > 1000 and not self.steps % self.config.target_update:
+        #if self.steps > 1000 and not self.steps % self.config.target_update:
+        if self.steps % self.config.target_update == 0:
 
             self.target_net.load_state_dict(self.policy_net.state_dict())
 
-            print('model_update: episode_reward ', self.episode_reward, self.best_reward)
             if self.episode_reward > self.best_reward or self.steps % 50000 == 0:
+                print('save_model: episode_reward ', self.episode_reward, self.best_reward)
                 self.best_reward = self.episode_reward
-                print("New Best Reward: {}".format(self.best_reward))
                 self.save_model()
 
     def select_action(self):
@@ -197,6 +208,18 @@ class Player(object):
         eps_threshold = self.config.eps_end + (self.config.eps_start - self.config.eps_end) * \
                         np.exp(-1. * self.steps_done / self.config.eps_decay)
         self.steps_done += 1.
+        # bookkeeping
+        with torch.no_grad():
+            print('select_action', self.policy_net(self.state), self.target_net(self.state))
+            self.policy_net_action_value_history.append(self.policy_net(self.state).detach().cpu().numpy())
+            self.target_net_action_value_history.append(self.target_net(self.state).detach().cpu().numpy())
+            if self.steps_done % 100 == 0:
+                with open('bookkeeping.pkl', 'wb') as f:
+                    d = {'policy_net_action_value_history': self.policy_net_action_value_history,
+                            'target_net_action_value_history': self.target_net_action_value_history}
+                    cloudpickle.dump(d, f)
+
+
         if sample > eps_threshold:
             with torch.no_grad():
                 action = self.policy_net(self.state).max(1)[1].view(1, 1)
@@ -223,10 +246,7 @@ class Player(object):
                                            if s is not None])
         state_batch = torch.cat(batch.state)
         action_batch = torch.cat(batch.action)
-        try:
-            reward_batch = torch.cat([r.float() for r in batch.reward])
-        except:
-            pdb.set_trace()
+        reward_batch = torch.cat([r.float() for r in batch.reward])
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
@@ -238,9 +258,7 @@ class Player(object):
         if self.config.doubleq:
             _, next_state_actions = self.policy_net(non_final_next_states).max(1, keepdim=True)
             # ()
-            next_state_values[non_final_mask] = self.target_net(non_final_next_states).gather(1,
-                                                                                              next_state_actions).squeeze(
-                1)
+            next_state_values[non_final_mask] = self.target_net(non_final_next_states).gather(1, next_state_actions).squeeze(1)
             next_state_values = next_state_values.data
             # print("Double Q")
         else:
@@ -256,15 +274,18 @@ class Player(object):
         loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
         # ()
         self.loss_history = loss
+
+       
         # print(loss)
+        #if self.reward:
+        #    import pdb; pdb.set_trace()
 
         # Optimize the model
-        if False:
-            self.optimizer.zero_grad()
-            loss.backward()
-            for param in self.policy_net.parameters():
-                param.grad.data.clamp_(-1, 1)
-            self.optimizer.step()
+        self.optimizer.zero_grad()
+        loss.backward()
+        for param in self.policy_net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
 
     def train_model(self):
 
@@ -303,9 +324,6 @@ class Player(object):
         self.recent_history = [0] * int(self.config.criteria.split('/')[1])
 
         torch.backends.cudnn.deterministic = True
-        torch.manual_seed = (self.config.random_seed)
-        random.seed(self.config.random_seed)
-        np.random.seed(self.config.random_seed)
 
         self.Env.reset()
         ## store game info once
@@ -321,6 +339,8 @@ class Player(object):
         last_screen = self.get_screen()
         current_screen = self.get_screen()
         self.state = current_screen - last_screen
+        
+        t0 = time.time()
 
         while self.steps < self.config.max_steps:
 
@@ -341,7 +361,7 @@ class Player(object):
 
             self.reward, self.ended, self.win = self.Env.step(self.action.item())
 
-            #print('reward, ended, win', self.reward, self.ended, self.win)
+            print('reward, ended, win', self.reward, self.ended, self.win)
             #misc.imsave('screens/step_%d_after.png' % self.steps, self.Env.render())
 
             avatar_position_data['episodes'][-1].append((self.Env.current_env._game.sprite_groups['avatar'][0].rect.left,
@@ -464,5 +484,8 @@ class Player(object):
                 self.screen_history = []
                 # plt.plot(self.total_reward_history)
                 # plt.savefig('reward_history{}.png'.format(self.config.game_name))
+
+        t = time.time() - t0
+        print('took ', t, 's , or ', t/self.config.max_steps, 's per step')
 
         self.save_model()
