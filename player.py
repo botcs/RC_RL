@@ -105,7 +105,7 @@ class Player(object):
 
     def save_model(self):
 
-        filepath = 'model_weights/{}_trial{}_{}.pt'.format(self.config.game_name, self.config.trial_num,
+        filepath = 'model_weights_25M/{}_trial{}_{}.pt'.format(self.config.game_name, self.config.trial_num,
                                                            self.config.level_switch)
         print('saving to ', filepath)
         torch.save(self.target_net.state_dict(),
@@ -113,7 +113,7 @@ class Player(object):
 
     def load_model(self):
 
-        filepath = 'model_weights/{}'.format(self.config.model_weight_path)
+        filepath = 'model_weights_25M/{}'.format(self.config.model_weight_path)
 
         self.policy_net.load_state_dict(torch.load(filepath))
         self.target_net.load_state_dict(torch.load(filepath))
@@ -441,7 +441,7 @@ class Player(object):
                 self.recent_history.pop()
 
                 if self.level_step():
-                    with open('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+                    with open('reward_histories_25M/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                                          self.config.level_switch,
                                                                                          self.config.trial_num),
                               "ab") as file:
@@ -474,7 +474,7 @@ class Player(object):
                 # if not self.episode % 10:
                 # np.save("reward_histories/{}_reward_history_{}_trial{}.npy".format(self.config.game_name, self.config.level_switch, self.config.trial_num), self.reward_history)
                 # np.savetxt('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name, self.config.level_switch, self.config.trial_num), a, fmt='%.2f', delimiter=',', header=" level,  steps,  ep_reward,  win")
-                with open('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+                with open('reward_histories_25M/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                                      self.config.level_switch,
                                                                                      self.config.trial_num),
                           "ab") as file:
