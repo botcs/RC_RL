@@ -114,6 +114,7 @@ class Player(object):
     def load_model(self):
 
         filepath = 'model_weights_25M/{}'.format(self.config.model_weight_path)
+        print('loading from ', filepath)
 
         self.policy_net.load_state_dict(torch.load(filepath))
         self.target_net.load_state_dict(torch.load(filepath))
@@ -125,7 +126,9 @@ class Player(object):
 
         if self.config.level_switch == 'fmri':
 
-            if self.level_steps == self.config.max_level_steps:
+            # mimic the fMRI sequence (repeat the same level self.config.max_level_steps steps, then move on to the next one)
+
+            if self.level_steps >= self.config.max_level_steps:
 
                 self.Env.lvl += 1
                 if self.Env.lvl == len(self.Env.env_list):
@@ -143,7 +146,10 @@ class Player(object):
 
         elif self.config.level_switch == 'repeated':
 
-            if won or self.level_steps == self.config.max_level_steps:
+            # repeat the same level up to self.config.max_level_steps, or until won, then move on to the next one
+            # start from the beginning after the last level
+
+            if won or self.level_steps >= self.config.max_level_steps:
 
                 self.Env.lvl += 1
                 if self.Env.lvl == len(self.Env.env_list):
@@ -158,7 +164,30 @@ class Player(object):
                 
             return 0 # learning is never finished in repeated mode
 
+        elif self.config.level_switch == 'repnonseq':
+
+            # repeat the same level up to self.config.max_level_steps
+            # start from the beginning after the last level
+
+            if self.level_steps >= self.config.max_level_steps:
+
+                self.Env.lvl += 1
+                if self.Env.lvl == len(self.Env.env_list):
+                    print('   starting over')
+                    self.Env.lvl = 0
+                self.Env.set_level(self.Env.lvl)
+                print('repeated-non-sequential next level', won, self.level_steps, self.config.max_level_steps, self.Env.lvl)
+                print('   time ', time.time() - self.time_start)
+
+                self.recent_history = [0] * int(self.config.criteria.split('/')[1])
+                self.level_steps = 0
+                
+            return 0 # learning is never finished in repeated mode
+
+
         elif self.config.level_switch == 'sequential':
+
+            # repeat the same level until won, then move on to the next one
 
             if won: # if level is 'won'
 
@@ -305,7 +334,7 @@ class Player(object):
         self.episode_reward = 0
         # self.reward_history = []
 
-        with open('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+        with open('reward_histories_25M/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                              self.config.level_switch,
                                                                              self.config.trial_num), "wb") as file:
             writer = csv.writer(file)

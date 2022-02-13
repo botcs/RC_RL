@@ -7,7 +7,10 @@ import cloudpickle
 
 # plot win rate
 #
-df = pandas.read_csv('reward_histories/vgfmri3_sokoban_reward_history_repeated_trial1.csv')
+#df = pandas.read_csv('reward_histories/vgfmri3_sokoban_reward_history_repeated_trial1.csv')
+#df = pandas.read_csv('reward_histories_25M/vgfmri3_chase_reward_history_repeated_trial1.csv', header=None, names=["level", "steps", "ep_reward", "win", "game_name", "criteria"])
+df = pandas.read_csv('reward_histories_25M/vgfmri3_helper_reward_history_repeated_trial1.csv', header=None, names=["level", "steps", "ep_reward", "win", "game_name", "criteria"])
+
 winrate = np.cumsum(df['win']) / np.array(df['steps'])
 #print(winrate)
 
@@ -25,8 +28,9 @@ ax[0,1].set_title('(win) episode duration')
 ax[0,1].set_xlabel('steps')
 ax[0,1].set_ylabel('# steps/win')
 
+'''
 # plot action values
-with open('bookkeeping.pkl', 'rb') as f:
+with open('bookkeeping/bookkeeping.pkl', 'rb') as f:
     d = cloudpickle.load(f)
 
 # policy net
@@ -47,6 +51,7 @@ ax[1,1].set_title('action values')
 ax[1,1].set_xlabel('steps')
 ax[1,1].set_ylabel('Q (target)')
 ax[1,1].legend(['0', 'right', 'left', 'up', 'down', 'space'])
+'''
 
 plt.show()
 fig.savefig('viz.png')

@@ -9,6 +9,7 @@ games=( 'vgfmri3_chase' 'vgfmri3_helper' 'vgfmri3_bait' 'vgfmri3_lemmings' 'vgfm
 
 #games=( 'vgfmri4_helper' ) n 140000 , 4 days
 #games=( 'vgfmri4_bait' ) # 140000, 4 days
+#games=( 'vgfmri3_bait' ) # 140000, 4 days
 #games=( 'vgfmri4_chase' ) # 50000, 4 days
 
 echo ---------------- >> jobs.txt
@@ -24,7 +25,7 @@ for game in ${games[*]}; do
     # send the job to NCF
     #
     #sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 20001 -t 2-0:20 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=1200 -max_steps=1000000 -max_level_steps=100000 -level_switch=repeated -game_name=${game}"`
-    sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 20001 -t 2-0:20 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=1200 -max_steps=1000000 -max_level_steps=1200 -level_switch=fmri -game_name=${game} -pretrain=1 -model_weight_path=${game}_trial1_repeated.pt -num_trials=1 -trial_num=11"`
+    sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 50001 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=120000 -max_steps=1000000 -max_level_steps=120000 -level_switch=fmri -game_name=${game} -pretrain=1 -model_weight_path=${game}_trial1_repeated.pt -num_trials=11 -trial_num=1"`
     # for local testing
     #sbatch_output=`echo Submitted batch job 88725418`
     echo $sbatch_output
