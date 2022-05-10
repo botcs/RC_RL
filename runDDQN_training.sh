@@ -8,7 +8,8 @@
 #games=('vgfmri3_zelda')
 #games=('vgfmri3_plaqueAttack')
 
-games=( 'vgfmri4_chase' 'vgfmri4_helper' 'vgfmri4_bait' 'vgfmri4_lemmings' 'vgfmri4_avoidgeorge' 'vgfmri4_zelda')
+#games=( 'vgfmri4_chase' 'vgfmri4_helper' 'vgfmri4_bait' 'vgfmri4_lemmings' 'vgfmri4_avoidgeorge' 'vgfmri4_zelda')
+#games=( 'vgfmri4_zelda' )
 #games=(  'vgfmri3_helper' 'vgfmri3_bait'  'vgfmri3_zelda')
 
 #games=(  'vgfmri4_lemmings' 'vgfmri4_zelda') # 90000, 2 days
@@ -35,12 +36,12 @@ for game in ${games[*]}; do
     # -- initial repeated
     #sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 140000 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=25000000 -level_switch=repeated -game_name=${game} -target_update=1000"`
     # -- initial repnonseq
-    sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 140000 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=25000000 -level_switch=repnonseq -game_name=${game} -target_update=1000"`
+    #sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 140000 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=25000000 -level_switch=repnonseq -game_name=${game} -target_update=1000"`
 
     # -- continue repeated
     #sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 140000 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=13000000 -level_switch=repeated -game_name=${game} -target_update=1000 -pretrain=1 -model_weight_path=${game}_trial1_repeated.pt"`
     # -- continue repnonseq
-    #sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 140000 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=25000000 -level_switch=repnonseq -game_name=${game} -target_update=1000 -pretrain=1 -model_weight_path=${game}_trial1_repnonseq.pt"`
+    sbatch_output=`sbatch -p fasse_gpu --gres=gpu --mem 140000 -t 7-0:00 -o ${outfileprefix}_%j.out -e ${outfileprefix}_%j.err --wrap="source activate pedro; python -W ignore::UserWarning runDDQN.py -timeout=250000 -max_level_steps=250000 -max_steps=6000000 -level_switch=repnonseq -game_name=${game} -target_update=1000 -pretrain=1 -model_weight_path=${game}_trial1_repnonseq.pt"`
     # for local testing
     #sbatch_output=`echo Submitted batch job 88725418`
     echo $sbatch_output

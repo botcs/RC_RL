@@ -334,7 +334,7 @@ class Player(object):
         self.episode_reward = 0
         # self.reward_history = []
 
-        with open('reward_histories_25M/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+        with open('reward_histories_25M_eval_120000/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                              self.config.level_switch,
                                                                              self.config.trial_num), "wb") as file:
             writer = csv.writer(file)
@@ -437,10 +437,10 @@ class Player(object):
             self.state = self.next_state
 
             # Perform one step of the optimization (on the target network)
-            self.optimize_model()
+            #self.optimize_model()
 
             # Update the target network
-            self.model_update()
+            #self.model_update()
 
             if self.ended or self.episode_steps > self.config.timeout or (self.level_steps >= self.config.max_level_steps and self.config.level_switch in ['repeated', 'fmri']):
 
@@ -470,7 +470,7 @@ class Player(object):
                 self.recent_history.pop()
 
                 if self.level_step():
-                    with open('reward_histories_25M/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+                    with open('reward_histories_25M_eval_120000/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                                          self.config.level_switch,
                                                                                          self.config.trial_num),
                               "ab") as file:
@@ -503,7 +503,7 @@ class Player(object):
                 # if not self.episode % 10:
                 # np.save("reward_histories/{}_reward_history_{}_trial{}.npy".format(self.config.game_name, self.config.level_switch, self.config.trial_num), self.reward_history)
                 # np.savetxt('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name, self.config.level_switch, self.config.trial_num), a, fmt='%.2f', delimiter=',', header=" level,  steps,  ep_reward,  win")
-                with open('reward_histories_25M/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+                with open('reward_histories_25M_eval_120000/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                                      self.config.level_switch,
                                                                                      self.config.trial_num),
                           "ab") as file:
