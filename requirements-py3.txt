@@ -1,0 +1,29 @@
+cloudpickle~=3.1
+cycler~=0.12
+decorator~=5.1
+imageio~=2.34
+ipython~=8.27
+matplotlib~=3.9
+networkx~=3.3
+numpy>=1.26,<2.0
+Pillow~=10.4
+prompt-toolkit~=3.0
+pygame~=2.6
+Pygments~=2.18
+python-dateutil~=2.9
+pytz~=2024.1
+PyWavelets~=1.6
+scikit-image~=0.24
+scipy~=1.13
+termcolor~=2.4
+torch==2.5.1
+torchvision==0.20.1
+traitlets~=5.14
+kiwisolver~=1.4
+pyparsing~=3.1
+six~=1.16
+wcwidth~=0.2
+
+# Notes:
+# - Removed Python 2 backports (backports.*, enum34, futures, pathlib2, scandir, subprocess32, simplegeneric).
+# - Omitted PyBrain; code references require refactor or replacement (see migration notes).
