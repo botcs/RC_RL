@@ -9,21 +9,22 @@ This interface is a generic one for interfacing with RL agents.
 import numpy as np
 from numpy import zeros
 import pygame
-from ontology import BASEDIRS
-from core import VGDLSprite
-from stateobsnonstatic import StateObsHandlerNonStatic
+from .ontology import BASEDIRS
+from .core import VGDLSprite
+from .stateobsnonstatic import StateObsHandlerNonStatic
 from collections import defaultdict
 import argparse
 from IPython import embed
 import random
 import math
 import importlib
-from colors import *
-from util import factorize, objectsToSymbol
+from .colors import *
+from .util import factorize, objectsToSymbol
 from pygame.locals import K_SPACE, K_UP, K_DOWN, K_LEFT, K_RIGHT
 from termcolor import colored
 import time
-import cPickle
+import pickle as cPickle
+from functools import reduce
 # from line_profiler import LineProfiler
 
 OBSERVATION_LOCAL = 'local'
@@ -121,7 +122,7 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
         """
         symbolDict = a dict mapping each sprite name to its symbol.
         If there's no sprite overlap, then returns a string. Else returns numpy array.
-        """        
+        """
         mappedState = np.ones((self.outdim[1]*self.outdim[0]))
         kl_set = set(self._game.kill_list)
         for k, lst in self._game.sprite_groups.items():
@@ -140,7 +141,7 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
         symbolDict = a dict mapping each sprite name to its symbol.
         If there's no sprite overlap, then returns a string. Else returns numpy array.
         """
-        ## faster version, but need to figure out how to display 
+        ## faster version, but need to figure out how to display
 
         locs = defaultdict(lambda:[])
         if binary:
@@ -154,7 +155,7 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
                     y,x = sprite.rect.top/30, sprite.rect.left/30
                     locs[(y,x)].append(sprite.name)
 
-        for k,v in locs.iteritems():
+        for k,v in locs.items():
             if binary:
                 symbol = 0
             else:
@@ -168,7 +169,7 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
                         symbol = 'A'
                     else:
                         symbol = objectsToSymbol(self, v, self.symbolDict)
-                
+
                 if symbol in ['A', 'X']:
                     symbol = colored(symbol, 'red')
                 else:
@@ -427,7 +428,7 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
         else:
             (ended, won) = self._isDone()
             termination = []
-        
+
         self._game.ended, self._game.win = ended, won
 
         dScore = self._game.score - pre_step_score
@@ -463,8 +464,8 @@ class RLEnvironmentNonStatic( StateObsHandlerNonStatic):
 ## the game in the agent's 'head'
 def defTheoryTest():
     from examples.gridphysics.theorytest import game, level
-    print level[0]
-    print game[0]
+    print(level[0])
+    print(game[0])
     return (game, level)
 
 def defVirtualGame():
@@ -540,14 +541,17 @@ def natcasecmp(a, b):
 def defInputGame(filename, randomize=False, index=None):
     game_file = importlib.import_module(filename)
     levels = [k for k in game_file.__dict__.keys() if 'level' in k]
-    levels.sort(natcasecmp)
+    try:
+        levels.sort()  # Python 3: avoid cmp-style sort
+    except Exception:
+        levels = sorted(levels)
     # print levels
     if randomize:
         level = random.choice(levels)
         return (game_file.game, game_file.__dict__[level])
     elif index>=0:
         if index<len(levels):
-            print index
+            print(index)
             level = levels[index]
         else:
             level = random.choice(levels)
@@ -600,19 +604,19 @@ def testSpecs():
     game = _createVGDLGame( *defMaze() )
     rle = RLEnvironmentNonStatic( *defMaze() )
     if rle.actionSpec() != {'scheme': 'Integer', 'N': 4}:
-        print "FAILED actionSpec"
-        print rle.actionSpec()
+        print("FAILED actionSpec")
+        print(rle.actionSpec())
     if rle.observationSpec() != {'scheme': 'Doubles', 'size': [10, 1]}:
-        print "FAILED observationSpec"
-        print rle.observationSpec()
+        print("FAILED observationSpec")
+        print(rle.observationSpec())
 
 # Verify that observation received matches target observation
 def _verify( obs, targetObs ):
     if obs["pcontinue"] != targetObs["pcontinue"]:
-        print "FAILED pcontinue"
+        print("FAILED pcontinue")
         return False
     if obs["reward"] != targetObs["reward"]:
-        print "FAILED reward"
+        print("FAILED reward")
         return False
     match = True
     i=0
@@ -622,11 +626,11 @@ def _verify( obs, targetObs ):
         i = i+1
 
     if match==False:
-        print ""
-        print "FAILED observation"
-        print obs["observation"]
-        print targetObs["observation"]
-        print match
+        print("")
+        print("FAILED observation")
+        print(obs["observation"])
+        print(targetObs["observation"])
+        print(match)
         return False
     return True
 
@@ -639,8 +643,8 @@ def _verify( obs, targetObs ):
 
 def createMindEnv(game, level, output=False, obsType=OBSERVATION_GLOBAL ):
     if output:
-        print game
-        print level
+        print(game)
+        print(level)
     return RLEnvironmentNonStatic( game, level, observationType=obsType )
 
 def createRLVirtualGame( obsType=OBSERVATION_GLOBAL ):
@@ -755,7 +759,7 @@ def testSimpleGame1(numEpisodes, numJogOnSpot, verify, reuseGame, obsType):
             rle = createRLSimpleGame1( obsType )
 
         # rle = createRLSimpleGame1( obsType )
-        print "in testSimpleGame1"
+        print("in testSimpleGame1")
         embed()
 
 
@@ -777,7 +781,7 @@ def testFrogs(numEpisodes, numJogOnSpot, verify, reuseGame, obsType):
             rle = createRLFrogs( obsType )
 
         # rle = createRLSimpleGame1( obsType )
-        print "in testFrogs"
+        print("in testFrogs")
         embed()
 
 def testSimpleGame_missile(numEpisodes, numJogOnSpot, verify, reuseGame, obsType):
@@ -797,7 +801,7 @@ def testSimpleGame_missile(numEpisodes, numJogOnSpot, verify, reuseGame, obsType
             rle = createRLSimpleGame1( obsType )
 
         # rle = createRLSimpleGame1( obsType )
-        print "in testSimpleGame1"
+        print("in testSimpleGame1")
         embed()
 
 def testAliens(numEpisodes, numJogOnSpot, verify, reuseGame, obsType):
@@ -816,7 +820,7 @@ def testAliens(numEpisodes, numJogOnSpot, verify, reuseGame, obsType):
             # Re-create the game.
             rle = createRLAliens( obsType )
 
-        print "in testAliens"
+        print("in testAliens")
         embed()
 
         # res = rle.step(0) #up

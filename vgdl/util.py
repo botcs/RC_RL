@@ -3,7 +3,7 @@ import itertools
 import os
 import random
 import csv
-import cPickle
+import pickle as cPickle
 
 ALNUM = '0123456789bcdefhijklmnpqrstuvwxyzQWERTYUIOPSDFHJKLZXCVBNM,./;[]<>?:`-=~!@#$%^&*()_+'
 CHARS = 'bcdefhijklmnpqrstuvwxyzQWERTYUIOPSDFHJKLZXCVBNM'
@@ -67,7 +67,7 @@ def objectsToSymbol(rle, objects, symbolDict):
 			return ALNUM[idx]
 	except:
 		# import ipdb; ipdb.set_trace()
-		print "objectsToSymbol problem."
+		print("objectsToSymbol problem.")
 		embed()
 
 def getObjectColor(objectID, all_objects, game, colorDict):
@@ -98,9 +98,9 @@ def extendColorDict(num):
 	for i in range(num):
 		colorName = make_random_name(CAPCHARS)
 		color = (random.choice(range(256)), random.choice(range(256)), random.choice(range(256)))
-		print colorName + '=' + str(color)
+		print(colorName + '=' + str(color))
 		colorDict[str(color)] = colorName
-	print colorDict
+	print(colorDict)
 
 def make_random_name(chars):
 	import random

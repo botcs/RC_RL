@@ -1,6 +1,6 @@
 
 import math
-import core
+from . import core
 from IPython import embed
 import pygame
 #from tools import logToFile
@@ -225,7 +225,6 @@ class AStarWorld(object):
 	def nodeInSet(self, node, nodeSet):
 		nodeSetIndices = [n.index for n in nodeSet]
 		return node.index in nodeSetIndices
-
 
 
 

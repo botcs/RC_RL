@@ -5,10 +5,10 @@ Video game description language -- parser, framework and core game classes.
 '''
 import pygame
 from random import choice
-from tools import Node, indentTreeParser
+from .tools import Node, indentTreeParser
 from collections import defaultdict
-from tools import roundedPoints
-from colors import *
+from .tools import roundedPoints
+from .colors import *
 import os, shutil
 import datetime
 import uuid
@@ -24,7 +24,7 @@ from IPython import embed
 import time
 import os
 import uuid
-from util import getObjectColor
+from .util import getObjectColor
 
 # ---------------------------------------------------------------------
 #     Constants
@@ -102,11 +102,11 @@ class VGDLParser(object):
         return self.game
 
     def _eval(self, estr):
-        """ Whatever is visible in the global namespace (after importing the ontologies)
-        can be used in the VGDL, and is evaluated.
-        """
-        from ontology import * # @UnusedWildImport
-        return eval(estr)
+        """Evaluate expressions in the VGDL using ontology names."""
+        from . import ontology as _ont
+        env = globals().copy()
+        env.update(vars(_ont))
+        return eval(estr, env)
 
     def parseInteractions(self, inodes):
         for inode in inodes:

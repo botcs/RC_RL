@@ -6,16 +6,16 @@ Video game description language -- ontology of concepts.
 import random
 from random import choice
 from copy import deepcopy
-from colors import *
+from .colors import *
 import itertools
 from math import sqrt
 import pygame
 import numpy as np
 import scipy.stats
-from tools import triPoints, unitVector, vectNorm, oncePerStep
-from ai import AStarWorld
+from .tools import triPoints, unitVector, vectNorm, oncePerStep
+from .ai import AStarWorld
 from IPython import embed
-import core
+from . import core
 import copy
 # import ipdb
 import time
@@ -162,7 +162,7 @@ class ContinuousPhysics(GridPhysics):
 
 
     def activeMovement(self, sprite, action, speed=None):
-        print self.gridsize
+        print(self.gridsize)
         """ Here the assumption is that the controls determine the direction of
         acceleration of the sprite. """
         if speed is None:
@@ -528,7 +528,7 @@ class AStarChaser(VGDLSprite): ##
         # Will not update AStarChaser if there is nothing to chase
         killed = [s.name for s in game.kill_list]
         if 'avatar' in killed:
-            print "avatar is dead"
+            print("avatar is dead")
             return
 
         if game.time % 5 == 0:
@@ -537,24 +537,24 @@ class AStarChaser(VGDLSprite): ##
         # print 'in astar', [world.get_sprite_tile_position(p.sprite) for p in path]
         # Uncomment below to draw debug paths.
         # self._setDebugVariables(world,path)
-        print 'updating'
-        print len(self.path)
+        print('updating')
+        print(len(self.path))
         if self.path:
             # n = min(5, len(self.path)-1)
 
 
             if self.next_move == None:
-                print 'popping off next path node'
+                print('popping off next path node')
                 # self.path.pop(0)
                 self.next_move = self.path.pop(0)
-                print self.next_move.sprite.rect, self.rect
+                print(self.next_move.sprite.rect, self.rect)
 
             next_x, next_y = self.next_move.sprite.rect.x, self.next_move.sprite.rect.y
             self_x, self_y = self.rect.x, self.rect.y
 
 
-            print next_x, next_y
-            print self_x, self_y
+            print(next_x, next_y)
+            print(self_x, self_y)
 
             dx = abs(next_x - self_x)
             dy = abs(next_y - self_y)
@@ -567,7 +567,7 @@ class AStarChaser(VGDLSprite): ##
             if dx < error and dy < error:
                 self.last_move = self.next_move
                 self.next_move = None
-            print dx, dy, movement
+            print(dx, dy, movement)
 
             self.physics.activeMovement(self, movement)
 
@@ -1189,7 +1189,7 @@ class NoveltyTermination(Termination):
         #             # if 'RandomNPC' in class1  and e[2]  != 'avatar':
         #                 # return False, None
         #             # if 'Flicker' in class1  and e[2]  == 'avatar':
-        #                 # return False, None       
+        #                 # return False, None
         #         except KeyError:
         #             if e[1]=='ENDOFSCREEN':
         #                 name1 = 'EOS'
@@ -1234,7 +1234,7 @@ class NoveltyTermination(Termination):
         #             # if 'RandomNPC' in class2  and e[1]  != 'avatar':
         #                 # return False, None
         #             # if 'Flicker' in class2  and e[1]  == 'avatar':
-        #                 # return False, None   
+        #                 # return False, None
         #         except KeyError:
         #             if e[2]=='ENDOFSCREEN':
         #                 name2 = 'EOS'
@@ -1623,7 +1623,7 @@ def collectResource(sprite, partner, game, resource=None, value=1, limit=None): 
 
     killSprite(sprite, partner, game)
     args = {'resource':sprite.name, 'value':value, 'limit':game.resources_limits[sprite.name]}
-    print "collectResource", partner.resources
+    print("collectResource", partner.resources)
     #print 'Collected ', colorDict[str(sprite.color)]#partner.resources[r]
     # return ('collectResource', colorDict[str(partner.color)], colorDict[str(sprite.color)])
     return ('collectResource' , sprite.ID, partner.ID, args)
@@ -1703,7 +1703,7 @@ def pullWithIt(sprite, partner, game):
     try:
         sprite._updatePos(v, partner.speed * sprite.physics.gridsize[0])
     except:
-        print "problem in pullwithit"
+        print("problem in pullwithit")
         embed()
     if isinstance(sprite.physics, ContinuousPhysics):
         sprite.speed = partner.speed
@@ -1824,7 +1824,7 @@ def chaserClosestTargets(sprite, game):
 def chaserMovesToward(sprite, game, target, fleeing):
     """ Find the canonical direction(s) which move toward
     the target. """
-    
+
     if (sprite, target, fleeing) in game.chaserMovesTowardDict:
         return game.chaserMovesTowardDict[(sprite, target, fleeing)]
 
@@ -1947,7 +1947,7 @@ def updateOptions(game, sprite_type_tuple, current_sprite, params={}, missileOri
 
         realCooldown = int(current_sprite.cooldown)
         current_sprite.cooldown = cooldown
-        
+
         targets = getTargets(game, targetColor)
 
         options = []
@@ -2016,12 +2016,12 @@ def updateOptions(game, sprite_type_tuple, current_sprite, params={}, missileOri
             # if (current_sprite.lastmove+1)%cooldown!=0:
             #     position_options = {(current_sprite.rect.left, current_sprite.rect.top): 1.}
             #     return position_options, position_options
-            
+
             coords = current_sprite.physics.calculatePassiveMovementGivenParams(current_sprite, speed, orientation)
-            
+
             # If object has speed = 0 or no 'orientation' attribute
             position_options, clustered_position_options = {}, {}
-            
+
             if coords == None:
                 return position_options, position_options
 
@@ -2039,7 +2039,7 @@ def updateOptions(game, sprite_type_tuple, current_sprite, params={}, missileOri
                 orientation = (orientation[0]*-1, orientation[1]*-1)
 
                 coords = current_sprite.physics.calculatePassiveMovementGivenParams(current_sprite, speed, orientation)
-                clustered_position_options[(coords[0], coords[1])] = 1.-epsilon_prob   ##8/1 hack                
+                clustered_position_options[(coords[0], coords[1])] = 1.-epsilon_prob   ##8/1 hack
 
                 # if (coords[0], coords[1]) in clustered_position_options.keys():
                     # clustered_position_options[(coords[0], coords[1])] += .5 - epsilon_prob
@@ -2141,7 +2141,7 @@ def distributionInitSetup(game, sprite):
             continue
     objectColors = list(objectColors)
     if 'DTIZDF' in objectColors:
-        print "found DTIZDF"
+        print("found DTIZDF")
         embed()
     game.spriteDistribution[sprite] = initializeDistribution(sprite_types, objectColors) # Indexed by object ID
     # game.object_token_spriteDistribution[sprite] = initializeDistribution(sprite_types, objectColors) # Indexed by object ID
@@ -2384,7 +2384,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                     exceptions.append(ao_color)
 
                 except AttributeError:
-                    print "tried and failed to add a shooting avatar type"
+                    print("tried and failed to add a shooting avatar type")
                     # embed()
                     # No args in avatar
                     sample.append(Sprite(vgdlType=MovingAvatar, color=all_objects[k]['type']['color']))
@@ -2405,7 +2405,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
         return sample, exceptions, distributionsHaveChanged, best_params
 
     for obj_type in types:
-        
+
         if obj_type in ['DARKGRAY', 'MPUYEI', 'NUPHKK', 'SCJPNE']:
             s = Sprite(vgdlType=ResourcePack, color=obj_type)
             sample.append(s)
@@ -2428,11 +2428,11 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
             # spriteUpdateNormalizer += spriteUpdateDict[k]
         # if obj_type=='RED':
             # embed()
-        
+
         ######
 
         k1 = (('vgdlType', ResourcePack),)
-        
+
 
         ## Integrate evidence across all episodes; pick best hypothesis.
 
@@ -2473,7 +2473,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                         )
                         tmp_prod *= bestSpriteTypeDict[obj_type][ID][randomnpc_param]
                     else:
-                        print "problem in param_product"
+                        print("problem in param_product")
                         embed()
 
                 param_sum[param] += num*tmp_prod
@@ -2481,7 +2481,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                 # param_z += param_product[param]
                 # param_sum[param] += param_product[param]
                 # param_z += param_product[param]
-        
+
         if param_z != 0:
             for param,val in param_sum.items():
                 param_sum[param] /= param_z
@@ -2563,7 +2563,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
 
         # null_hypothesis = [k for k in param_product.keys() if 'Resource' in str(k[0][1])][0]
         # best_param = max(param_product, key=param_product.get)
-        
+
 
         # if param_product[null_hypothesis]==0 and param_product[best_param]==0:
         #     best_param = null_hypothesis
@@ -2649,7 +2649,7 @@ def sampleFromDistribution(game, curr_distribution, all_objects, spriteUpdateDic
                     # embed()
                     distributionsHaveChanged = True
         except:
-            print "failed to find matching object in sampleFromDistribution"
+            print("failed to find matching object in sampleFromDistribution")
             embed()
 
         # param = dict(best_param[1:])
@@ -2689,7 +2689,7 @@ def checkIfDistributionsHaveChanged(game, spriteUpdateDict, bestSpriteTypeDict):
             ## sample multinomially from the spriteDistribution[key] dictionary, to get the spriteType
             ## add that to the color info for that object.
             if k not in curr_distribution.keys():
-                print k, "not in curr_distribution"
+                print(k, "not in curr_distribution")
                 embed()
             sprite_possibilities = curr_distribution[k]
         else:
@@ -2827,7 +2827,7 @@ def spriteInduction(game, step, bestSpriteTypeDict, oldSpriteSet=None, old_outco
                                           # game.object_token_movement_options, outcome)
 
                 game.spriteUpdateDict[sprite] += 1
-        
+
                 # if game.all_objects[sprite]['features']['color']=='RED':
                 #     print "missile prob", game.spriteDistribution[sprite][(('vgdlType', Missile), ('cooldown', 1), ('orientation', (1,0)), ('speed', 0.1))]
                 #     print "chaser prob", game.spriteDistribution[sprite][(('vgdlType', Chaser), ('cooldown', 1),  ('fleeing', False), ('speed', 0.1), ('stype', 'RED'))]
@@ -2865,11 +2865,11 @@ def selectObjectGoal(rle, unknown_colors, all_colors, exclude_colors, method):
     safe_colors = [c for c in all_colors if c not in exclude_colors]
     if method=='random_then_nearest':
         if len(unknown_colors)>0 and random.random()>epsilon:
-            print "selecting an unknown color"
+            print("selecting an unknown color")
             object_color = random.choice(unknown_colors)
         else:
             # in case we've interacted with everything once but want to randomly try things again
-            print "sometimes with probability", epsilon, "we select randomly from all safe colors. This just happened."
+            print("sometimes with probability", epsilon, "we select randomly from all safe colors. This just happened.")
             object_color = random.choice(safe_colors)
         choices = [item for sublist in rle._game.sprite_groups.values() for item in sublist if colorDict[str(item.color)]==object_color]
         avatar_loc = rle._rect2pos(rle._game.sprite_groups['avatar'][0].rect)
