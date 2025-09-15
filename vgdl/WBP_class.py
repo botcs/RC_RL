@@ -14,8 +14,7 @@ class WBP(Planner):
 		self.T = len(rle._obstypes.keys())+1 #number of object types. Adding avatar, which is not in obstypes.
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		self.trueAtoms = set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
-		self.objectTypes.sort()
+		self.objectTypes = sorted(rle._game.sprite_groups.keys())
 		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys() if k not in ['wall', 'avatar']])
 		self.objIDs = {}
 		self.maxNumObjects = 6
@@ -72,7 +71,7 @@ class WBP(Planner):
 		lst.append(ind)
 		if not self.vecSize:
 			self.vecSize = len(lst)
-			print "Vector is length {}".format(self.vecSize)
+			print("Vector is length {}".format(self.vecSize))
 		return set(lst)
 	
 	def compareDicts(self, d1,d2):
@@ -278,9 +277,9 @@ class Node():
 				terminal, win = vrle._isDone()
 				i += 1
 		if len(self.actionSeq)>0:
-			print actionDict[self.actionSeq[-1]]
+			print(actionDict[self.actionSeq[-1]])
 		self.updateObjIDs(vrle)
-		print vrle.show()
+		print(vrle.show())
 		# if len([o for o in vrle._game.sprite_groups['bullet'] if o not in vrle._game.kill_list]) > 1:
 			# print "multiple bullets"
 			# embed()
@@ -320,12 +319,12 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
-			print actionDict[a]
+			print(actionDict[a])
 			vrle.step(a)
-			print vrle.show()
+			print(vrle.show())
 			# vrle.step((0,0))
 			# print vrle.show()
 			# embed()
@@ -390,7 +389,7 @@ if __name__ == "__main__":
 	last, visited, rejected = p.BFS2(rle)
 	# last, visited, rejected = BFS(rle, p)
 	# last, visited, rejected = BFS2(rle, p)
-	print time.time()-t1
+	print(time.time()-t1)
 	# print len(visited), len(rejected)
 	embed()
 	# if not hasattr(last, 'actionSeq'):
@@ -401,4 +400,3 @@ if __name__ == "__main__":
 	# 	print time.time()-t1
 	# 	print len(visited), len(rejected)
 	# embed()
-

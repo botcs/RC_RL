@@ -116,7 +116,7 @@ class VGDLParser(object):
                 class1, class2 = [x.strip() for x in pair.split(" ") if len(x)>0]
                 self.game.collision_eff.append(tuple([class1, class2, eclass, args]))
                 if self.verbose:
-                    print "Collision", pair, "has effect:", edef
+                    print("Collision", pair, "has effect:", edef)
         
         if 'cloneSprite' in [e[2].__name__ for e in self.game.collision_eff]:
             self.has_clonesprite = True
@@ -153,7 +153,7 @@ class VGDLParser(object):
         for tn in tnodes:
             sclass, args = self._parseArgs(tn.content)
             if self.verbose:
-                print "Adding:", sclass, args
+                print("Adding:", sclass, args)
             self.game.terminations.append(sclass(**args))
 
     def parseConditions(self, cnodes):
@@ -182,7 +182,7 @@ class VGDLParser(object):
             # import pdb; pdb.set_trace()
             if len(sn.children) == 0:
                 if self.verbose:
-                    print "Defining:", key, sclass, arguments, stypes
+                    print("Defining:", key, sclass, arguments, stypes)
                 # import pdb; pdb.set_trace()
                 self.game.sprite_constr[key] = (sclass, arguments, stypes)
                 self.game.alt_sprite_constr[key] = (sclass, arguments, stypes)
@@ -256,7 +256,7 @@ class BasicGame(object):
 
     def __init__(self, **kwargs):
         from ontology import Immovable, DARKGRAY, BLACK, MovingAvatar, GOLD
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             if hasattr(self, name):
                 self.__dict__[name] = value
             # else:
@@ -337,7 +337,7 @@ class BasicGame(object):
     def buildLevel(self, lstr):
         from ontology import stochastic_effects
         lines = [l for l in lstr.split("\n") if len(l)>0]
-        lengths = map(len, lines)
+        lengths = list(map(len, lines))
         assert min(lengths)==max(lengths), "Inconsistent line lengths."
         self.width = lengths[0]
         self.height = len(lines)
@@ -350,7 +350,7 @@ class BasicGame(object):
         self.screensize = (self.width*self.block_size, self.height*self.block_size)
 
         # set up resources
-        for res_type, (sclass, args, _) in self.sprite_constr.iteritems():
+        for res_type, (sclass, args, _) in self.sprite_constr.items():
             if issubclass(sclass, Resource):
                 if 'res_type' in args:
                     res_type = args['res_type']
@@ -394,7 +394,7 @@ class BasicGame(object):
         self.block_size = max(2,int(800./max(self.width, self.height)))
         self.screensize = (self.width*self.block_size, self.height*self.block_size)
 
-        for res_type, (sclass, args, _) in self.sprite_constr.iteritems():
+        for res_type, (sclass, args, _) in self.sprite_constr.items():
             if issubclass(sclass, Resource):
                 if 'res_type' in args:
                     res_type = args['res_type']
@@ -407,7 +407,7 @@ class BasicGame(object):
 
         for key in pos:
             for loc in pos[key]:
-                print loc
+                print(loc)
                 self._createSprite([key],(loc[0]*self.block_size,loc[1]*self.block_size))
 
         self.kill_list=[]
@@ -445,7 +445,7 @@ class BasicGame(object):
 
         for key in keys:
             if self.num_sprites > self.MAX_SPRITES:
-                print "Sprite limit reached."
+                print("Sprite limit reached.")
                 return res
 
             sclass, args, stypes = self.sprite_constr[key]
@@ -606,7 +606,7 @@ class BasicGame(object):
                 else:
                     ss[pos] = attrs
 
-                for a, val in s.__dict__.iteritems():
+                for a, val in s.__dict__.items():
                     if a not in ias:
                         attrs[a] = val
                 if s.resources:
@@ -623,17 +623,17 @@ class BasicGame(object):
         self.reset()
         self.score = fs['score']
         self.ended = fs['ended']
-        for key, ss in fs['objects'].iteritems():
+        for key, ss in fs['objects'].items():
             self.sprite_groups[key] = [] ## Added 4/31/17
-            for ID, attrs in ss.iteritems():
+            for ID, attrs in ss.items():
                 try:
                     p = attrs['x'], attrs['y']
                 except:
                     p = attrs[x], attrs[y]
                 s = self._createSprite_cheap(key, p)
-                for a, val in attrs.iteritems():
+                for a, val in attrs.items():
                     if a == 'resources':
-                        for r, v in val.iteritems():
+                        for r, v in val.items():
                             s.resources[r] = v
                     else:
                         s.__setattr__(a, val)
@@ -919,10 +919,10 @@ class BasicGame(object):
                         spriteClass = s.name
                         spriteColor = s.colorName
         except:
-            print "getSpriteClass problem"
+            print("getSpriteClass problem")
             embed()
         if None in [spriteClass, spriteColor]:
-            print "failed to find sprite class or spriteColor"
+            print("failed to find sprite class or spriteColor")
             embed()
 
         return spriteClass, spriteColor
@@ -1012,7 +1012,7 @@ class BasicGame(object):
                 self.setFullState(self.playback_states[self.playback_index])
                 current_state = self.playback_states[self.playback_index]
             except:
-                print "playback is failing"
+                print("playback is failing")
                 embed()
 
             # Save the event and agent state
@@ -1065,11 +1065,11 @@ class BasicGame(object):
         if win:
             # self.score += 1
             self.win = True
-            print "Game won, with score %s" % self.score
+            print("Game won, with score %s" % self.score)
         else:
             # self.score -= 1
             self.win = False
-            print "Playback is incomplete, or game is lost. Score=%s" % self.score
+            print("Playback is incomplete, or game is lost. Score=%s" % self.score)
         
         # if make_movie:
             # self.makeMovie(parameter_string, gameName)
@@ -1251,20 +1251,20 @@ class BasicGame(object):
                         #     self.score = 1
 
                         self.win = True
-                        print time.time()-t1, len(self.actions), win, self.score
-                        print "Termination", t.__dict__
-                        print "Game won, with score %s" % self.score
+                        print(time.time()-t1, len(self.actions), win, self.score)
+                        print("Termination", t.__dict__)
+                        print("Game won, with score %s" % self.score)
                     else:
                         self.win = False
                         # self.score -=1 ## Added 3/16/17
-                        print time.time()-t1, len(self.actions), win, self.score
-                        print "Game lost. Score=%s" % self.score
+                        print(time.time()-t1, len(self.actions), win, self.score)
+                        print("Game lost. Score=%s" % self.score)
                     # np.save("temp_data.npy", [time.time()-t1, len(self.actions), self.win, self.score])
                     allStates.append(self.getFullState())
 
                     pygame.time.wait(10)
-                    print len(self.actions), win, self.score
-                    print "ended in {} steps".format(self.time)
+                    print(len(self.actions), win, self.score)
+                    print("ended in {} steps".format(self.time))
                     return win, self.score
                     # pygame.quit()
                     # sys.exit()
@@ -1314,7 +1314,7 @@ class BasicGame(object):
             # allStates.append(self.getFullState())
 
         if(persist_movie):
-            print "Creating Movie"
+            print("Creating Movie")
             self.video_file = "./videos/" +  str(self.uiud) + ".mp4"
             subprocess.call(["ffmpeg","-y",  "-r", "30", "-b", "800", "-i", tmpl, self.video_file ])
             [os.remove(f) for f in glob.glob(tmp_dir + "*" + str(self.uiud) + "*")]
@@ -1338,13 +1338,13 @@ class BasicGame(object):
                 # self.score = 1
             # self.score +=1 # Added 3/16/17
             self.win = True
-            print "Game won, with score %s" % self.score
+            print("Game won, with score %s" % self.score)
             # np.save("temp_data.npy", [time.time()-t1, len(self.actions), self.win, self.score])
 
         else:
             self.win = False
             # self.score -=1 # Added 3/16/17
-            print "Game lost. Score=%s" % self.score
+            print("Game lost. Score=%s" % self.score)
             # np.save("temp_data.npy", [time.time()-t1, len(self.actions), self.win, self.score])
 
 
@@ -1358,7 +1358,7 @@ class BasicGame(object):
         return self.getAvatars()[0].declare_possible_actions()
 
     def startGameExternalPlayer(self, headless, persist_movie, movie_dir):
-        print "in startgameexternalplayer"
+        print("in startgameexternalplayer")
         embed()
         self._initScreen(self.screensize, headless)
         pygame.display.flip()
@@ -1476,11 +1476,11 @@ class VGDLSprite(object):
             self.colorName = str(self.color)
 
         #self.color = color or self.color or (choice(self.COLOR_DISC), choice(self.COLOR_DISC), choice(self.COLOR_DISC))
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             try:
                 self.__dict__[name] = value
             except:
-                print "WARNING: undefined parameter '%s' for sprite '%s'! "%(name, self.__class__.__name__)
+                print("WARNING: undefined parameter '%s' for sprite '%s'! " % (name, self.__class__.__name__))
         # how many timesteps ago was the last move?
         self.lastmove = 0
         # how many timesteps ago was the last displacement? We'll use this to track more generic hypotheses,
@@ -1628,7 +1628,7 @@ class Termination(object):
 
     def get_args(self):
         args = {}
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.__dict__.items():
             if key != 'name':
                 args[key] = value
         if 'win' not in args:
@@ -1640,4 +1640,3 @@ class Conditional(object):
     def condition(self, game):
         """ returns true if condition is met. default returns false"""
         return False
-

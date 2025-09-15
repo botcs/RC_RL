@@ -114,14 +114,14 @@ class VGDLParser(object):
                 self.game.collision_eff.append(tuple([x.strip() for x in pair.split(" ") if len(x)>0]
                                                      +[eclass, args]))
                 if self.verbose:
-                    print "Collision", pair, "has effect:", edef
+                    print("Collision", pair, "has effect:", edef)
         #print self.game.collision_eff
 
     def parseTerminations(self, tnodes):
         for tn in tnodes:
             sclass, args = self._parseArgs(tn.content)
             if self.verbose:
-                print "Adding:", sclass, args
+                print("Adding:", sclass, args)
             self.game.terminations.append(sclass(**args))
 
     def parseSprites(self, snodes, parentclass=None, parentargs={}, parenttypes=[]):
@@ -138,7 +138,7 @@ class VGDLParser(object):
 
             if len(sn.children) == 0:
                 if self.verbose:
-                    print "Defining:", key, sclass, args, stypes
+                    print("Defining:", key, sclass, args, stypes)
                 self.game.sprite_constr[key] = (sclass, args, stypes)
                 if key in self.game.sprite_order:
                     # last one counts
@@ -154,7 +154,7 @@ class VGDLParser(object):
             # a char can map to multiple sprites
             keys = [x.strip() for x in val.split(" ") if len(x)>0]
             if self.verbose:
-                print "Mapping", c, keys
+                print("Mapping", c, keys)
             self.game.char_mapping[c] = keys
 
     def _parseArgs(self, s,  sclass=None, args=None):
@@ -189,12 +189,12 @@ class BasicGame(object):
 
     def __init__(self, **kwargs):
         from ontology import Immovable, DARKGRAY, MovingAvatar, GOLD
-        for name, value in kwargs.iteritems():
-            print "NAME: ", name
+        for name, value in kwargs.items():
+            print("NAME: ", name)
             if hasattr(self, name):
                 self.__dict__[name] = value
             else:
-                print "WARNING: undefined parameter '%s' for game! "%(name)
+                print("WARNING: undefined parameter '%s' for game! " % (name))
 
         # contains mappings to constructor (just a few defaults are known)
         self.sprite_constr = {'wall': (Immovable, {'color': DARKGRAY}, ['wall']),
@@ -233,7 +233,7 @@ class BasicGame(object):
     def buildLevel(self, lstr):
         from ontology import stochastic_effects
         lines = [l for l in lstr.split("\n") if len(l)>0]
-        lengths = map(len, lines)
+        lengths = list(map(len, lines))
         assert min(lengths)==max(lengths), "Inconsistent line lengths."
         self.width = lengths[0]
         self.height = len(lines)
@@ -243,7 +243,7 @@ class BasicGame(object):
         self.screensize = (self.width*self.block_size, self.height*self.block_size)
 
         # set up resources
-        for res_type, (sclass, args, _) in self.sprite_constr.iteritems():
+        for res_type, (sclass, args, _) in self.sprite_constr.items():
             if issubclass(sclass, Resource):
                 if 'res_type' in args:
                     res_type = args['res_type']
@@ -293,7 +293,7 @@ class BasicGame(object):
         res = []
         for key in keys:
             if self.num_sprites > self.MAX_SPRITES:
-                print "Sprite limit reached."
+                print("Sprite limit reached.")
                 return
             sclass, args, stypes = self.sprite_constr[key]
             # verify the singleton condition
@@ -415,7 +415,7 @@ class BasicGame(object):
                     ss[str(pos)] = attrs
                 else:
                     ss[pos] = attrs
-                for a, val in s.__dict__.iteritems():
+                for a, val in s.__dict__.items():
                     if a not in ias:
                         attrs[a] = val
                 if s.resources:
@@ -432,17 +432,17 @@ class BasicGame(object):
         self.reset()
         self.score = fs['score']
         self.ended = fs['ended']
-        for key, ss in fs['objects'].iteritems():
+        for key, ss in fs['objects'].items():
             self.sprite_groups[key] = []
-            for pos, attrs in ss.iteritems():
+            for pos, attrs in ss.items():
                 if as_string:
                     p = eval(pos)
                 else:
                     p = pos
                 s = self._createSprite_cheap(key, p)
-                for a, val in attrs.iteritems():
+                for a, val in attrs.items():
                     if a == 'resources':
-                        for r, v in val.iteritems():
+                        for r, v in val.items():
                             s.resources[r] = v
                     else:
                         s.__setattr__(a, val)
@@ -691,7 +691,7 @@ class BasicGame(object):
             VGDLSprite.dirtyrects = []
 
         if(persist_movie):
-            print "Creating Movie"
+            print("Creating Movie")
             self.video_file = "./videos/" +  str(self.uiud) + ".mp4"
             subprocess.call(["ffmpeg","-y",  "-r", "30", "-b", "800", "-i", tmpl, self.video_file ])
             [os.remove(f) for f in glob.glob(tmp_dir + "*" + str(self.uiud) + "*")]
@@ -711,7 +711,7 @@ class BasicGame(object):
         # print finalEventList[-1]
         # print "],\n{}\n)\n\n".format(terminationCondition)
 
-        print "Expecting {} events".format(len(finalEventList))
+        print("Expecting {} events".format(len(finalEventList)))
 
         if win:
             # winning a game always gives a positive score.
@@ -719,10 +719,10 @@ class BasicGame(object):
                 self.score = 1
 
             self.win = True
-            print "Game won, with score %s" % self.score
+            print("Game won, with score %s" % self.score)
         else:
             self.win = False
-            print "Game lost. Score=%s" % self.score
+            print("Game lost. Score=%s" % self.score)
 
         # ipdb.set_trace()
 
@@ -822,11 +822,11 @@ class VGDLSprite(object):
         self.color = color or self.color or (140, 20, 140)
 
         #self.color = color or self.color or (choice(self.COLOR_DISC), choice(self.COLOR_DISC), choice(self.COLOR_DISC))
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             try:
                 self.__dict__[name] = value
             except:
-                print "WARNING: undefined parameter '%s' for sprite '%s'! "%(name, self.__class__.__name__)
+                print("WARNING: undefined parameter '%s' for sprite '%s'! " % (name, self.__class__.__name__))
         # how many timesteps ago was the last move?
         self.lastmove = 0
 

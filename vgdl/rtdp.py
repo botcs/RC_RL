@@ -14,7 +14,7 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
+from queue import Queue
 import multiprocessing
 from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
 from ontology import initializeDistribution, updateDistribution, updateOptions, sampleFromDistribution, spriteInduction, selectObjectGoal
@@ -71,11 +71,11 @@ class QLearner:
 		try:
 			immovables = self.rle.immovables
 			self.immovables = immovables
-			print "immovables", immovables
+			print("immovables", immovables)
 		except:
 			immovables = ['wall']#,'poison']
 			self.immovables = immovables
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
 			if i in self.rle._obstypes.keys():
@@ -142,7 +142,7 @@ class QLearner:
 
 	def findObjectInRLE(self, rle, objName):
 		if objName not in rle._obstypes.keys():
-			print objName, "not in rle."
+			print(objName, "not in rle.")
 			# return None
 		objLocs = []
 		objCode = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index(objName))
@@ -182,14 +182,14 @@ class QLearner:
 		##TODO: Finish last part of this function -- sometimes it can't access objloc[0][0], objloc[1][0]
 		state = np.reshape(np.fromstring(s,dtype=float), self.rle.outdim)
 		if objName not in rle._obstypes.keys():
-			print objName, "not in rle."
+			print(objName, "not in rle.")
 			return None
 		objCode = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index(objName))
 		objLoc = np.where(state==objCode)
 		try:
 			objLoc = objLoc[0][0], objLoc[1][0] #(y,x)
 		except:
-			print "can't find objloc"
+			print("can't find objloc")
 			embed()
 		return objLoc
 
@@ -212,7 +212,7 @@ class QLearner:
 					q.append((neighbor, path + [neighbor]))
 
 		if node != goal_loc:
-			print "didn't find path to goal in getSubgoals (in getPathToGoal)"
+			print("didn't find path to goal in getSubgoals (in getPathToGoal)")
 			return False
 			# embed()
 			# raise Exception("Didn't find a path to the goal location.")
@@ -224,7 +224,7 @@ class QLearner:
 		## also add neighbors of goal rewardQueue.
 		##TODO: update this if goal moves!!
 		if "goal" not in self.rle._obstypes.keys():
-			print "no goal to get subgoals to"
+			print("no goal to get subgoals to")
 			return []
 		goal_code = 2**(1+sorted(self.rle._obstypes.keys())[::-1].index("goal"))
 		killerObjectCodes = []
@@ -499,7 +499,7 @@ class QLearner:
 			self.V[s] = self.QVals[(s,a)]
 			rle = simulationResults[a]
 			## UNCOMMENT HERE IF YOU WANT TO WATCH Q-learner learning.
-			print rle.show()
+			print(rle.show())
 			terminal = rle._isDone()[0]
 			i += 1
 			if not terminal:

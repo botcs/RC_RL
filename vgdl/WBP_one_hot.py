@@ -11,13 +11,12 @@ class WBP(Planner):
 		self.T = len(rle._obstypes.keys())+1 #number of object types. Adding avatar, which is not in obstypes.
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		self.trueAtoms = set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
-		self.objectTypes.sort()
+		self.objectTypes = sorted(rle._game.sprite_groups.keys())
 		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys() if k not in ['wall', 'avatar']])
 		self.maxNumObjects = 6
 		self.trackTokens = False
 		self.vecSize = None
-		print "If we track tokens we have an additional", 2**self.phiSize, "array elements."
+		print("If we track tokens we have an additional", 2**self.phiSize, "array elements.")
 
 	def calculateAtoms(self, rle):
 		## Converts rle state into a long list of atoms of length Nx2xT
@@ -47,7 +46,7 @@ class WBP(Planner):
 			vec = vec+nums
 
 		if self.vecSize==None:
-			print len(vec), "atoms"
+			print(len(vec), "atoms")
 			self.vecSize = len(vec)
 		return np.array(vec)
 
@@ -274,13 +273,13 @@ class Node():
 					vrle.step(self.actionSeq[-1])
 					terminal, win = vrle._isDone()
 					# terminal = vrle._isDone()[0]
-			except:
-				print "conditions met but copy failed"
+		except:
+				print("conditions met but copy failed")
 				embed()
 		else:
 		# except:
 			self.reconstructed=True
-			print "copy failed; replaying from top"
+			print("copy failed; replaying from top")
 			# embed()
 			vrle = copy.deepcopy(rle)
 			terminal, win = vrle._isDone()
@@ -292,8 +291,8 @@ class Node():
 				# terminal = vrle._isDone()[0]
 				i += 1
 		if len(self.actionSeq)>0:
-			print self.actionSeq[-1]
-		print vrle.show()
+			print(self.actionSeq[-1])
+		print(vrle.show())
 		# if len(vrle._game.sprite_groups['probe'])==0:
 			# self.WBP.findAvatarInRLE(vrle) == (2,4):
 			# embed()
@@ -315,7 +314,7 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
 			vrle.step(a)
@@ -375,15 +374,14 @@ if __name__ == "__main__":
 	t1 = time.time()
 	# last, visited, rejected, visitedStates = BFS(rle, p, 2)
 	last, visited, rejected, visitedStates = BFS2(rle, p, 2)
-	print time.time()-t1
-	print len(visited), len(rejected)
+	print(time.time()-t1)
+	print(len(visited), len(rejected))
 	embed()
 	if not hasattr(last, 'actionSeq'):
-		print "Failed without tracking tokens. re-trying"
+		print("Failed without tracking tokens. re-trying")
 		p.trackTokens = True
 		t1 = time.time()
 		last, visited, rejected, visitedStates = BFS(rle, p, 2)
-		print time.time()-t1
-		print len(visited), len(rejected)
+		print(time.time()-t1)
+		print(len(visited), len(rejected))
 	# embed()
-

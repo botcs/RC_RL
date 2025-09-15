@@ -136,7 +136,7 @@ class GameEnvironment(Environment, StateObsHandler):
         if init_state is not None:
             self.setState(init_state)
         for a in action_sequence:
-            print a, self.getState()
+            print(a, self.getState())
             if self._isDone()[0]:
                 break
             self.performAction(a)
@@ -221,7 +221,7 @@ def testInteractions():
     agent = DummyAgent()
     exper = EpisodicExperiment(task, agent)
     res = exper.doEpisodes(2)
-    print res
+    print(res)
 
 def testPolicyAgent():
     from pybrain.rl.experiments.episodic import EpisodicExperiment
@@ -239,7 +239,7 @@ def testPolicyAgent():
     env.reset()
     exper = EpisodicExperiment(task, agent)
     res = exper.doEpisodes(2)
-    print res
+    print(res)
     
 def testRecordingToGif(human=False):
     from pybrain.rl.experiments.episodic import EpisodicExperiment
@@ -259,10 +259,10 @@ def testRecordingToGif(human=False):
         agent = PolicyDrivenAgent.buildOptimal(env)
     exper = EpisodicExperiment(task, agent)
     res = exper.doEpisodes(1)
-    print res
+    print(res)
     
     actions = [a for _, a, _ in env._allEvents]
-    print actions
+    print(actions)
     makeGifVideo(env, actions, initstate=env._initstate)
     
 def testAugmented():
@@ -290,9 +290,9 @@ wwwwwwwwwwwww
                           recordingEnabled=True, actionDelay=150)
     C = MDPconverter(g, env=env, verbose=True)
     Ts, R, _ = C.convert()
-    print C.states
-    print Ts[0]
-    print R
+    print(C.states)
+    print(Ts[0])
+    print(R)
     env.reset()
     agent = PolicyDrivenAgent.buildOptimal(env)
     env.visualize = True

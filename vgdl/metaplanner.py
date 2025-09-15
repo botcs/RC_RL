@@ -54,7 +54,7 @@ def translateEvents(events, all_objects, rle):
 			elif len(event)==2:
 				outlist.append((event[0], getObjectColor(event[1])))
 		except:
-			print "translateEvents failed"
+			print("translateEvents failed")
 			embed()
 
 	#Make sure events in timestep are unique (don't want to double-count things)
@@ -63,13 +63,13 @@ def translateEvents(events, all_objects, rle):
 		if o not in uniqueEventList:
 			uniqueEventList.append(o)
 	if len(uniqueEventList)>0:
-		print uniqueEventList
+		print(uniqueEventList)
 	return uniqueEventList
 
 
 def observe(rle, obsSteps, bestSpriteTypeDict, display=False):
 	if display:
-		print "observing for {} steps".format(obsSteps)
+		print("observing for {} steps".format(obsSteps))
 	if obsSteps>0:
 		for i in range(obsSteps):
 			# print rle.show()
@@ -81,11 +81,11 @@ def observe(rle, obsSteps, bestSpriteTypeDict, display=False):
 			# print "step 2 took {} seconds".format(time.time()-t1)
 			rle.step((0,0))
 			if display:
-				print "score: {}, game tick: {}".format(rle._game.score, rle._game.time)
-				print rle.show(color='blue')
+				print("score: {}, game tick: {}".format(rle._game.score, rle._game.time))
+				print(rle.show(color='blue'))
 
 			rle._game.nextPositions = {}
-			for k, v in rle._game.all_objects.iteritems():
+			for k, v in rle._game.all_objects.items():
 				rle._game.nextPositions[k] = (int(rle._game.all_objects[k]['sprite'].rect.x), int(rle._game.all_objects[k]['sprite'].rect.y))
 				try:
 					if rle._game.previousPositions[k] != rle._game.nextPositions[k]:
@@ -113,7 +113,7 @@ def planActLoop(rleCreateFunc, filename, max_actions_per_plan, planning_steps, d
 	rle = rleCreateFunc(OBSERVATION_GLOBAL)
 	game, level = defInputGame(filename)
 	outdim = rle.outdim
-	print rle.show()
+	print(rle.show())
 
 	terminal = rle._isDone()[0]
 
@@ -184,16 +184,16 @@ def planUntilSolved(rleCreateFunc, filename, defaultPolicyMaxSteps, partitionWei
 	for subgoal in subgoals:
 		rle, actions = getToWaypoint(rle, subgoal, symbolDict, defaultPolicyMaxSteps, partitionWeights=[10,2,4])
 		numActions += len(actions)
-		print steps, "steps"
+		print(steps, "steps")
 		# total_steps += steps
 		if total_steps > maxEpisodes:
 			solved = False
 			break
 
 	if solved:
-		print "Found and executed plan using", total_steps, "epiosodes of MCTS."
+		print("Found and executed plan using", total_steps, "epiosodes of MCTS.")
 	else:
-		print "didn't solve game even using %i episodes of MCTS"%total_steps
+		print("didn't solve game even using %i episodes of MCTS" % total_steps)
 
 	return mcts, total_steps, solved, numActions
 
@@ -247,7 +247,7 @@ def getToWaypoint(rle, subgoal, plannerType, symbolDict, defaultPolicyMaxSteps, 
 
 	theory = generateTheoryFromGame(rle)
 
-	print "in getToWayPoint"
+print("in getToWayPoint")
 	# embed()
 	# print "making RLE in getToWaypoint, after generateTheoryFromGame()"
 	theoryString, levelString, inverseMapping, immovables, killerObjects =\
@@ -255,9 +255,9 @@ def getToWaypoint(rle, subgoal, plannerType, symbolDict, defaultPolicyMaxSteps, 
 	Vrle = createMindEnv(theoryString, levelString, output=False)
 	Vrle.immovables, Vrle.killerObjects = immovables, killerObjects
 
-	print "mental map with subgoal", subgoal
-	print Vrle.show()
-	print "planner type", plannerType
+print("mental map with subgoal", subgoal)
+print(Vrle.show())
+print("planner type", plannerType)
 	if plannerType=='IW':
 		planner = IW(rle=Vrle, gameString=theoryString, levelString=levelString, gameFilename=Vrle.game_name, k=2)
 		planner.BFS(Vrle)
@@ -275,11 +275,11 @@ def getToWaypoint(rle, subgoal, plannerType, symbolDict, defaultPolicyMaxSteps, 
 	elif plannerType=='AStar':
 		planner = AStar(Vrle, gameString=theoryString, levelString=levelString)
 		path, actions = planner.search()
-	print "Found plan to subgoal. Actions", actions
+	print("Found plan to subgoal. Actions", actions)
 	if act:
 		for a in actions:
 			rle.step(a)
-			print rle.show()
+			print(rle.show())
 	return rle, actions
 
 def objectGoalReached(effects, object_goal):
@@ -287,7 +287,7 @@ def objectGoalReached(effects, object_goal):
 	goal_achieved = False
 	for e in effects:
 		if 'DARKBLUE' in e and colorDict[str(object_goal.color)] in e:
-			print "goal achieved"
+			print("goal achieved")
 			goal_achieved = True
 			break
 	return goal_achieved

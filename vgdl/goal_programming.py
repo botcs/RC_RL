@@ -45,7 +45,7 @@ def createNewClassInfo(theory):
     class_num = max_num+1
     new_class_name = 'c'+str(class_num)
     used_colors = theory.spriteObjects.keys()
-    color = next((c for c in colorDict.itervalues() if c not in used_colors), None)
+    color = next((c for c in colorDict.values() if c not in used_colors), None)
     return new_class_name, color
 
 class GoalAgent(Agent):
@@ -112,11 +112,11 @@ class GoalAgent(Agent):
 
         newenv = self.initializeVrle(h)
         board = numpy.zeros(newenv.outdim)
-        for locs in newenv._game.sprite_groups.itervalues():
+        for locs in newenv._game.sprite_groups.values():
             for loc in locs:
                 board[loc.y / 30, loc.x / 30] = 1
-        for i in xrange(newenv.outdim[1]):
-            for j in xrange(newenv.outdim[0]):
+        for i in range(newenv.outdim[1]):
+            for j in range(newenv.outdim[0]):
                 if board[j][i] == 0:
                     addNewSprite(newenv, new_name, (i * 30, j * 30))
 

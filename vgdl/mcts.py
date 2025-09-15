@@ -14,7 +14,7 @@ from collections import defaultdict, deque
 import time
 import copy
 from threading import Lock
-from Queue import Queue
+from queue import Queue
 import multiprocessing
 from qlearner import *
 from ontology import Immovable, Passive, Resource, ResourcePack, RandomNPC, Chaser, AStarChaser, OrientedSprite, Missile
@@ -45,7 +45,7 @@ class Basic_MCTS:
 	def __init__(self, existing_rle=False, game = None, level = None, partitionWeights=[1,0,1],\
 		         rleCreateFunc=False, obsType = OBSERVATION_GLOBAL, decay_factor=.8, num_workers=1):
 		if not existing_rle and not rleCreateFunc:
-			print "You must pass either an existing rle or an rleCreateFunc"
+			print("You must pass either an existing rle or an rleCreateFunc")
 			return
 		# assumption: not starting on terminal state
 		"""
@@ -178,7 +178,7 @@ class Basic_MCTS:
 								# print "found altered path", path[subgoal_index+i]
 								break
 						except:
-							print "indices didn't work out in looking for different path"
+							print("indices didn't work out in looking for different path")
 
 				# self.subgoals.append(path[subgoal_index])
 		return self.subgoals
@@ -194,7 +194,7 @@ class Basic_MCTS:
 			# print "immovables", immovables
 		except:
 			immovables = ['wall', 'poison']
-			print "Using defaults as immovables", immovables
+			print("Using defaults as immovables", immovables)
 
 		for i in immovables:
 			if i in self._obstypes.keys():
@@ -274,8 +274,8 @@ class Basic_MCTS:
 			Vrle = copy.deepcopy(VRLE)
 
 			if i%100==0 and len(rewards)>0:
-				print "Training cycle: %i"%i
-				print "avg. rewards for last group of 100", np.mean(rewards[-100:])
+				print("Training cycle: %i" % i)
+				print("avg. rewards for last group of 100", np.mean(rewards[-100:]))
 
 			if defaultPolicySolveStep:
 				reward, v, iters = self.treePolicy(self.root, Vrle, step_horizon, \
@@ -331,24 +331,24 @@ class Basic_MCTS:
 		cntr=0
 		v = self.root
 		if output:
-			print "current state"
-			print np.reshape(v.state, rle.outdim)
+			print("current state")
+			print(np.reshape(v.state, rle.outdim))
 		actions, nodes = [], []
 		while v and not v.terminal and cntr<numActions:
 			if output:
-				print "options"
-				print [(ACTIONS[k],c.qVal) for k,c in v.children.iteritems()]
+				print("options")
+				print([(ACTIONS[k], c.qVal) for k, c in v.children.items()])
 			a, v = self.bestChild(v,(1,0,0))
 
 			actions.append(a)
 			nodes.append(v)
 			if output:
 				if v:
-					print "selected"
-					print ACTIONS[a]
-					print "resulted in"
-					print np.reshape(v.state, rle.outdim)
-					print ""
+					print("selected")
+					print(ACTIONS[a])
+					print("resulted in")
+					print(np.reshape(v.state, rle.outdim))
+					print("")
 			cntr+=1
 		# if v.terminal:
 		# 	distance = 0
@@ -389,7 +389,7 @@ class Basic_MCTS:
 				terminal = rle._isDone()[0]
 
 				if terminal != v.terminal or not np.array_equal(v.state, rle._getSensors()):
-					print "inconsistency in node and rle"
+					print("inconsistency in node and rle")
 					embed()
 				# terminal = (not res['pcontinue']) or (rle._avatar is None)
 				if terminal:
@@ -445,8 +445,8 @@ class Basic_MCTS:
 				maxVal = max(qVals)
 				choices = [(a,c) for (a,c) in v.children.items() if c.qVal==maxVal]
 				for (a,c) in v.children.items():
-					print a, c.qVal
-				print ""
+					print(a, c.qVal)
+				print("")
 				return random.choice(choices)
 		else:
 			return (None, None)
@@ -496,7 +496,7 @@ class Basic_MCTS:
 				if self.avatar_code not in [l%2 for l in c.state]: ##we're in a terminal losing state
 																	## Don't give pseudoreward
 					if not c.terminal:
-						print "terminal state but avatar not in c.state"
+						print("terminal state but avatar not in c.state")
 						embed()
 
 					# vLoc = np.where(np.reshape(v.state, self.outdim)%2==self.avatar_code)
@@ -526,14 +526,14 @@ class Basic_MCTS:
 						sumVisitCount += abs(math.sqrt(2*math.log(v.visitCount)/c.visitCount))
 						sumPseudoReward += abs(transform(loc))/c.visitCount
 					except TypeError:
-						print "loc is weird type"
+						print("loc is weird type")
 						embed()
 
 
 
 		# print ""
 		if debug:
-			print np.reshape(v.state, self.outdim)
+			print(np.reshape(v.state, self.outdim))
 		for a,c in v.children.items():
 			if v.equals(c):
 				funcVal = -float('inf')
@@ -589,18 +589,18 @@ class Basic_MCTS:
 					        + exploration_coefficient*math.sqrt(2*math.log(v.visitCount)/c.visitCount)/sumVisitCount \
 					        + heuristic_coefficient*(transform(loc)/c.visitCount)/sumPseudoReward	
 				if debug:
-					print a, funcVal
+					print(a, funcVal)
 
 			if funcVal > maxFuncVal:
 				maxFuncVal = funcVal
 				bestAction = a
 				bestChild = c
 		if bestChild == None:	## Tiebreaker
-			bestAction = random.choice(v.children.keys())
+			bestAction = random.choice(list(v.children))
 			bestChild = v.children[bestAction]
 
 		if debug:
-			print ""
+			print("")
 		return bestAction, bestChild
 
 	def defaultPolicy(self, v, rle, step_horizon, domain_knowledge=False):

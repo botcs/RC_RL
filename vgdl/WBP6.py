@@ -15,15 +15,14 @@ class WBP(Planner):
 		self.vecDim = [rle.outdim[0]*rle.outdim[1], 2, self.T]
 		# self.noveltyDict = []
 		self.trueAtoms = set() ## set of atoms that have been true at some point thus far in the planner.
-		self.objectTypes = rle._game.sprite_groups.keys()
-		self.objectTypes.sort()
+		self.objectTypes = sorted(rle._game.sprite_groups.keys())
 		self.phiSize = sum([len(rle._game.sprite_groups[k]) for k in rle._game.sprite_groups.keys() if k not in ['wall', 'avatar']])
 		self.objIDs = {}
 		self.maxNumObjects = 6
 		self.trackTokens = False
 		self.vecSize = None
 		self.padding = 5  ##5 is arbitrary; just to make sure we don't get overlap when we add positions
-		print "If we track tokens we have an additional", 2**self.phiSize, "array elements."
+		print("If we track tokens we have an additional", 2**self.phiSize, "array elements.")
 		i=1
 		for k in rle._game.all_objects.keys():
 			self.objIDs[k] = i * (rle.outdim[0]*rle.outdim[1]+self.padding)
@@ -72,7 +71,7 @@ class WBP(Planner):
 		newAtoms = self.delta(node.parent, node)
 		# print "in novelty fn"
 		# embed()
-		print 'old true atoms', len(node.state-set(newAtoms))
+		print('old true atoms', len(node.state-set(newAtoms)))
 		if len(self.trueAtoms) > 0:
 			trueAtoms = node.state
 			oldTrueAtoms = set(trueAtoms)-set(newAtoms)
@@ -115,7 +114,7 @@ def noveltyHeuristic(lst, WBP, k, surrogateCall=False):
 		 	else:
 		 		return random.choice(bestNodes)
 		else:
-			print "found 0 nodes in noveltyHeuristic"
+			print("found 0 nodes in noveltyHeuristic")
 			embed()
 
 def rewardHeuristic(lst, WBP, k, surrogateCall=False):
@@ -131,7 +130,7 @@ def rewardHeuristic(lst, WBP, k, surrogateCall=False):
 	 	else:
 	 		return random.choice(bestNodes)
 	else:
-		print "found 0 nodes in rewardHeuristic"
+		print("found 0 nodes in rewardHeuristic")
 		embed()
 
 
@@ -155,7 +154,7 @@ def BFS(rle, WBP):
 				Q.put(child)
 		else:
 			rejected.append(current)
-	print "no more states in queue"
+	print("no more states in queue")
 	# embed()
 	return Q, visited, rejected
 
@@ -175,7 +174,7 @@ def BFS2(rle, WBP):
 			current = rewardHeuristic(Q, WBP, WBP.k, surrogateCall=False)
 		## This is not nec. right.
 		if current is None:
-			print "got no node"
+			print("got no node")
 			embed()
 			return Q, visited, rejected
 		else:
@@ -217,11 +216,11 @@ class Node():
 					vrle.step(self.actionSeq[-1])
 					terminal, win = vrle._isDone()
 			except:
-				print "conditions met but copy failed"
-				embed()
+					print("conditions met but copy failed")
+					embed()
 		else:
 			self.reconstructed=True
-			print "copy failed; replaying from top"
+			print("copy failed; replaying from top")
 			vrle = copy.deepcopy(rle)
 			terminal, win = vrle._isDone()
 			i=0
@@ -229,17 +228,17 @@ class Node():
 				vrle.step(self.actionSeq[i])
 				terminal, win = vrle._isDone()
 				i += 1
-		print '-------------------------------------'
+		print('-------------------------------------')
 		if len(self.actionSeq)>0:
-			print [actionDict[a] for a in self.actionSeq]
+			print([actionDict[a] for a in self.actionSeq])
 		self.updateObjIDs(vrle)
-		print vrle.show()
+		print(vrle.show())
 		self.state = self.WBP.calculateAtoms(vrle)
 		self.lastState = vrle
 		self.win = win
 		self.novelty = self.WBP.novelty(self, self.WBP.k, update=updateNoveltyDict)
 		self.reward = vrle._game.score
-		print 'novelty', self.novelty
+		print('novelty', self.novelty)
 		# raw_input("Press Enter to continue...")
 		return win
 
@@ -263,12 +262,12 @@ class Node():
 		vrle = copy.deepcopy(self.rle)
 		terminal = vrle._isDone()[0]
 		i=0
-		print vrle.show()
+		print(vrle.show())
 		while not terminal:
 			a = self.actionSeq[i]
-			print actionDict[a]
+			print(actionDict[a])
 			vrle.step(a)
-			print vrle.show()
+			print(vrle.show())
 			# vrle.step((0,0))
 			# print vrle.show()
 			# embed()
@@ -332,10 +331,10 @@ if __name__ == "__main__":
 	t1 = time.time()
 	last, visited, rejected = BFS(rle, p)
 	# last, visited, rejected = BFS2(rle, p)
-	print
-	print 'time', time.time()-t1
-	print 'visited', len(visited)
-	print 'rejected', len(rejected)
+	print()
+	print('time', time.time()-t1)
+	print('visited', len(visited))
+	print('rejected', len(rejected))
 	# if not hasattr(last, 'actionSeq'):
 	# 	print "Failed without tracking tokens. re-trying"
 	# 	p.trackTokens = True
@@ -344,4 +343,3 @@ if __name__ == "__main__":
 	# 	print time.time()-t1
 	# 	print len(visited), len(rejected)
 	# embed()
-

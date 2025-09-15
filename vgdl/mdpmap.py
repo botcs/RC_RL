@@ -45,14 +45,14 @@ class MDPconverter(object):
     def convert(self, observations=True):
         if self.verbose:
             if observations:
-                print 'Number of features:', 5 * len(self.env._obstypes)
+                print('Number of features:', 5 * len(self.env._obstypes))
         initSet = [self.env._initstate]
         self.states = sorted(flood(self.tryMoves, None, initSet))
         dim = len(self.states)        
         if self.verbose:
-            print 'Actual states:', dim
-            print 'Non-zero rewards:', self.rewards
-            print 'Initial state', initSet[0]
+            print('Actual states:', dim)
+            print('Non-zero rewards:', self.rewards)
+            print('Initial state', initSet[0])
         Ts = [zeros((dim, dim)) for _ in self.env._actionset]
         R = zeros(dim)
         statedic = {}
@@ -69,7 +69,7 @@ class MDPconverter(object):
             di = statedic[dest]
             Ts[ai][si, di] += 1. / self.avgOver
         if self.verbose:
-            print 'Built Ts.'
+            print('Built Ts.')
         for T in Ts:
             for ti, row in enumerate(T):
                 if sum(row) > 0:  
@@ -77,14 +77,14 @@ class MDPconverter(object):
                 else:
                     row[ti] = 1
         if self.verbose:
-            print 'Normalized Ts.'
+            print('Normalized Ts.')
         if observations:
             # one observation for current position and each of the 4 neighbors.
             fMap = zeros((len(self.env._obstypes) * 5, dim))
             for si, state in enumerate(self.states):
                 fMap[:, si] = self.env.getSensors(state)                
             if self.verbose:
-                print 'Built features.'        
+                print('Built features.')       
             return Ts, R, fMap
         else:
             return Ts, R
@@ -104,7 +104,7 @@ class MDPconverter(object):
             dest = self.env.getState()
             res.append(dest)
             if self.verbose:
-                print state, 'do', a, '>', dest
+                print(state, 'do', a, '>', dest)
             self.sas_tuples.append((state, a, dest))            
             # remember reward if the final state ends the game
             ended, win = self.env._isDone()
@@ -114,7 +114,7 @@ class MDPconverter(object):
                 else:
                     self.rewards[dest] = -1
                 if self.verbose:
-                    print 'Ends with', win
+                    print('Ends with', win)
         # pass on the list of neighboring states
         return res
         
@@ -127,11 +127,11 @@ def testMaze():
     g.buildLevel(map_str)
     C = MDPconverter(g, verbose=True)
     Ts, R, fMap = C.convert()
-    print C.states
-    print R
+    print(C.states)
+    print(R)
     for T in Ts:
-        print T
-    print fMap
+        print(T)
+    print(fMap)
 
 def testStochMaze():
     from core import VGDLParser
@@ -140,11 +140,11 @@ def testStochMaze():
     g.buildLevel(stoch_level)
     C = MDPconverter(g, verbose=True)
     Ts, R, fMap = C.convert()
-    print C.states
-    print R
+    print(C.states)
+    print(R)
     for T in Ts:
-        print T
-    print fMap
+        print(T)
+    print(fMap)
 
     
 if __name__ == '__main__':

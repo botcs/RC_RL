@@ -9,7 +9,7 @@ import argparse
 import random
 from IPython import embed
 import math
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 import time
 
@@ -124,7 +124,7 @@ class Basic_MCTS:
 			rle = self.rleCreateFunc(OBSERVATION_GLOBAL)
 			# rle = q.get()
 			if i%10==0:
-				print "Training cycle: %i"%i
+				print("Training cycle: %i" % i)
 
 			# rle = self.rleCreateFunc(self.obsType)
 			reward, vl, iters = self.treePolicy(self.root, rle, step_horizon)
@@ -136,9 +136,9 @@ class Basic_MCTS:
 
 		# for worker in workers:
 		# 	worker.join()
-		print "Tree policy iters:", tree_policy_iters
-		print "Default policy iters:", default_policy_iters
-		print "Total time: %f"%(time.time()-oldTime)
+		print("Tree policy iters:", tree_policy_iters)
+		print("Default policy iters:", default_policy_iters)
+		print("Total time: %f" % (time.time()-oldTime))
 
 
 	def getBestActionsForPlayout(self):
@@ -168,18 +168,18 @@ class Basic_MCTS:
 
 	def debug(self):
 		v = self.root
-		print np.reshape(v.state, self.outdim)
+		print(np.reshape(v.state, self.outdim))
 		actions, nodes = [], []
 		while v and not v.terminal:
 			# print v.children.iteritems()
-			print [(k,c.qVal) for k,c in v.children.iteritems()]
+			print([(k, c.qVal) for k, c in v.children.items()])
 			a, v = self.bestChild(v,0)
 			actions.append(a)
 			nodes.append(v)
 			if v:
-				print a
-				print np.reshape(v.state, self.outdim)
-				print ""
+				print(a)
+				print(np.reshape(v.state, self.outdim))
+				print("")
 
 		return actions, nodes
 
@@ -437,4 +437,3 @@ if __name__ == "__main__":
 	# VGDLPlaybackParser.playGame(game, level, mcts.getBestActionsForPlayout())  
 
 	# rewardSum = mcts.startTestingPhase(50)
-
