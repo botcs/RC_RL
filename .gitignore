@@ -3,3 +3,6 @@
 *.simg
 venv/
 __pycache__/
+*.mp4
+*.png
+*.bak
