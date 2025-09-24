@@ -54,7 +54,7 @@ class Player(object):
         self.resize = T.Compose([T.ToPILImage(),
                                  T.Pad((np.max(self.game_size[0:2]) - self.game_size[1],
                                         np.max(self.game_size[0:2]) - self.game_size[0])),
-                                 T.Resize((self.config.img_size, self.config.img_size), interpolation=Image.CUBIC),
+                                 T.Resize((self.config.img_size, self.config.img_size), interpolation=Image.BICUBIC),
                                  T.ToTensor()])
 
         self.episode_durations = []
