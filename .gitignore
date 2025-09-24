@@ -7,3 +7,4 @@ __pycache__/
 *.png
 *.bak
 .DS_Store
+ddqn_outputs/

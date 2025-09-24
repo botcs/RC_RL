@@ -78,13 +78,31 @@ class Player(object):
         # Resize, and add a batch dimension (BCHW)
         return self.resize(screen).unsqueeze(0).to(self.device)
 
-    def save_gif(self):
+    def save_video(self):
+        if not self.screen_history:
+            return
 
-        imageio.mimsave('screens/{}_frame{}.gif'.format(self.config.game_name, self.steps), self.screen_history)
+        # Convert frames to uint8 format for video creation
+        frames_uint8 = []
+        for frame in self.screen_history:
+            if frame.dtype != np.uint8:
+                # Normalize to 0-255 range and convert to uint8
+                frame_min, frame_max = frame.min(), frame.max()
+                if frame_max > frame_min:
+                    frame_normalized = ((frame - frame_min) * 255.0 / (frame_max - frame_min)).astype(np.uint8)
+                else:
+                    frame_normalized = (frame * 255.0).astype(np.uint8)
+            else:
+                frame_normalized = frame
+            frames_uint8.append(frame_normalized)
 
-    def append_gif(self):
+        video_filename = 'ddqn_outputs/screens/{}_episode{}.mp4'.format(self.config.game_name, self.episode)
+        imageio.mimsave(video_filename, frames_uint8, fps=10, macro_block_size=1)
+        print("Video saved: {} ({} frames, 10 fps)".format(video_filename, len(frames_uint8)))
 
-        frame = self.Env.render(gif=True)
+    def append_frame(self):
+        # Use full resolution render instead of resized version for better GIF quality
+        frame = self.Env.render()  # Get full resolution frame
         self.screen_history.append(frame)
 
     def save_model(self):
@@ -165,7 +183,7 @@ class Player(object):
 
         # Compute a mask of non-final states and concatenate the batch elements
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                                batch.next_state)), device=self.device, dtype=torch.uint8)
+                                                batch.next_state)), device=self.device, dtype=torch.bool)
         non_final_next_states = torch.cat([s for s in batch.next_state
                                            if s is not None])
         state_batch = torch.cat(batch.state)
@@ -229,21 +247,28 @@ class Player(object):
         self.episode_reward = 0
         # self.reward_history = []
 
-        with open('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+        # Create required directories
+        os.makedirs('ddqn_outputs/reward_histories', exist_ok=True)
+        os.makedirs('ddqn_outputs/object_interaction_histories', exist_ok=True)
+        os.makedirs('ddqn_outputs/pickleFiles', exist_ok=True)
+        os.makedirs('ddqn_outputs/screens', exist_ok=True)
+        os.makedirs('model_weights', exist_ok=True)
+
+        with open('ddqn_outputs/reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                              self.config.level_switch,
-                                                                             self.config.trial_num), "wb") as file:
+                                                                             self.config.trial_num), "w") as file:
             writer = csv.writer(file)
             writer.writerow(["level", "steps", "ep_reward", "win", "game_name", "criteria"])
 
-        with open('object_interaction_histories/{}_object_interaction_history_{}_trial{}.csv'.format(
-                self.config.game_name, self.config.level_switch, self.config.trial_num), "wb") as file:
+        with open('ddqn_outputs/object_interaction_histories/{}_object_interaction_history_{}_trial{}.csv'.format(
+                self.config.game_name, self.config.level_switch, self.config.trial_num), "w") as file:
             interactionfilewriter = csv.writer(file)
             interactionfilewriter.writerow(
                 ['agent_type', 'subject_ID', 'modelrun_ID', 'game_name', 'game_level', 'episode_number', 'event_name',
                  'count'])
 
         ## PEDRO: Rename as needed
-        picklefilepath = 'pickleFiles/{}.csv'.format(self.config.game_name)
+        picklefilepath = 'ddqn_outputs/pickleFiles/{}.csv'.format(self.config.game_name)
 
         self.recent_history = [0] * int(self.config.criteria.split('/')[1])
 
@@ -274,7 +299,7 @@ class Player(object):
             # print(self.steps)
             # print(self.episode_reward)
 
-            self.append_gif()
+            self.append_frame()
 
             # Select and perform an action
             self.action = self.select_action()
@@ -331,8 +356,8 @@ class Player(object):
                 if self.episode_steps > self.config.timeout: print("Game Timed Out")
 
                 ## PEDRO: 3. At the end of each episode, write events to csv
-                with open('object_interaction_histories/{}_object_interaction_history_{}_trial{}.csv'.format(
-                        self.config.game_name, self.config.level_switch, self.config.trial_num), "ab") as file:
+                with open('ddqn_outputs/object_interaction_histories/{}_object_interaction_history_{}_trial{}.csv'.format(
+                        self.config.game_name, self.config.level_switch, self.config.trial_num), "a") as file:
                     interactionfilewriter = csv.writer(file)
                     for event_name, count in event_dict.items():
                         row = ('DDQN', 'NA', 'NA', self.config.game_name, self.Env.lvl, self.episode, event_name, count)
@@ -341,7 +366,9 @@ class Player(object):
                 self.episode += 1
 
                 # pdb.set_trace()
-                print("Level {}, episode reward at step {}: {}".format(self.Env.lvl, self.steps, self.episode_reward))
+                win_status = "WIN" if self.win else "LOSE"
+                print("Episode {}: Level {}, Steps {}, Reward {:.2f}, Rollout Length {}, Status: {}".format(
+                    self.episode, self.Env.lvl, self.steps, self.episode_reward, self.episode_steps, win_status))
                 sys.stdout.flush()
 
                 # Update the target network
@@ -355,10 +382,10 @@ class Player(object):
                 self.recent_history.pop()
 
                 if self.level_step():
-                    with open('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+                    with open('ddqn_outputs/reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                                          self.config.level_switch,
                                                                                          self.config.trial_num),
-                              "ab") as file:
+                              "a") as file:
                         writer = csv.writer(file)
                         writer.writerow(episde_results)
                     break
@@ -387,15 +414,15 @@ class Player(object):
 
                 # if not self.episode % 10:
                 # np.save("reward_histories/{}_reward_history_{}_trial{}.npy".format(self.config.game_name, self.config.level_switch, self.config.trial_num), self.reward_history)
-                # np.savetxt('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name, self.config.level_switch, self.config.trial_num), a, fmt='%.2f', delimiter=',', header=" level,  steps,  ep_reward,  win")
-                with open('reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
+                # np.savetxt('ddqn_outputs/reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name, self.config.level_switch, self.config.trial_num), a, fmt='%.2f', delimiter=',', header=" level,  steps,  ep_reward,  win")
+                with open('ddqn_outputs/reward_histories/{}_reward_history_{}_trial{}.csv'.format(self.config.game_name,
                                                                                      self.config.level_switch,
                                                                                      self.config.trial_num),
-                          "ab") as file:
+                          "a") as file:
                     writer = csv.writer(file)
                     writer.writerow(episde_results)
 
-                # self.save_gif()
+                self.save_video()
                 self.screen_history = []
                 # plt.plot(self.total_reward_history)
                 # plt.savefig('reward_history{}.png'.format(self.config.game_name))
