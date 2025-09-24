@@ -248,14 +248,16 @@ def main():
                 games_cache[gname] = doc
             doc = games_cache[gname]
             # dataset schema: 'descs' (list of game strings), 'levels' (list of level strings)
-            descs = doc.get('descs')
-            levels = doc.get('levels')
+            descs = doc.get('descs') or []
+            levels = doc.get('levels') or []
             if not isinstance(descs, list) or not isinstance(levels, list):
                 raise RuntimeError('Unexpected games doc schema; expected lists in descs/levels')
-            try:
-                return descs[level_idx], levels[level_idx]
-            except Exception:
+            if level_idx < 0 or level_idx >= len(levels):
                 raise IndexError(f'Level index {level_idx} out of range for game {gname}')
+            # Some datasets store a single game description applicable to all levels
+            game_str = descs[level_idx] if len(descs) > level_idx else (descs[0] if descs else '')
+            level_str = levels[level_idx]
+            return game_str, level_str
 
     played = 0
     for p in docs:
